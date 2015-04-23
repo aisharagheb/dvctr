@@ -6,6 +6,8 @@ angular.module( 'orderCloud', [
 	'ngMessages',
 	'ngTouch',
 	'orderCloud.sdk',
+	'orderCloud.base',
+	'orderCloud.login',
 	'orderCloud.home'
 ])
 

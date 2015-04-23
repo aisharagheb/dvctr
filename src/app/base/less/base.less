@@ -1,0 +1,50 @@
+#BaseTop {
+  height:@oc-base-top-height;
+  background-color:@oc-base-top-clr-bg;
+  h4 {
+	margin:0;
+	padding:10px;
+  }
+}
+#BaseBottom {
+  height:@oc-base-bottom-height;
+  background-color:@oc-base-bottom-clr-bg;
+}
+#BaseLeft {
+  background-color:@oc-base-left-clr-bg;
+}
+#BaseRight {
+  background-color:@oc-base-right-clr-bg
+}
+
+#BaseLeft,
+#BaseRight,
+#BaseMain {
+  height: calc(~"100vh - "(@oc-base-top-height + @oc-base-bottom-height));
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+@media(orientation:portrait) {
+  #BaseLeft,
+  #BaseRight {
+	position:fixed;
+	top:@oc-base-top-height;
+	bottom:@oc-base-bottom-height;
+	max-width:90vw;
+	z-index:1000;
+	transition: all 200ms;
+  }
+  #BaseLeft {
+	left:-90vw;
+	&.open {
+	  left:0px;
+	}
+  }
+  #BaseRight {
+	right:-90vw;
+	&.open {
+	  right:0px;
+	}
+  }
+}

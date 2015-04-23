@@ -9,7 +9,7 @@ angular.module( 'orderCloud.home', [
 
 function HomeConfig( $stateProvider, $urlMatcherFactoryProvider ) {
 	$urlMatcherFactoryProvider.strictMode(false);
-	$stateProvider.state( 'home', {
+	$stateProvider.state( 'base.home', {
 		url: '/home',
 		templateUrl:'home/templates/home.tpl.html',
 		controller:'HomeCtrl',
