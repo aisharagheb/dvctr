@@ -1,0 +1,37 @@
+<article am-wrapper>
+    <section am-padding>
+        <form novalidate name="testerForm">
+            <fieldset am-layout="stacked">
+                <div role="group">
+                    <label>Choose a Service:</label>
+                    <select ng-model="testerController.selectedService"
+                            ng-options="api.name for api in testerController.services">
+                        <option value="">-- Choose Service --</option>
+                    </select>
+                    <label>Choose Operation:</label>
+                    <select ng-model="testerController.selectedMethod"
+                            ng-options="method as method.name for method in testerController.selectedService.methods"
+                            ng-change="testerController.initialize()">
+                        <option value="">-- Choose Operation --</option>
+                    </select>
+                    <label>Parameters Object:</label>
+                    <pre>{{testerController.display(testerController.selectedMethod, 'params') | json}}</pre>
+
+                    <label>Please provide inputs where necessary:</label>
+                    <tester-params></tester-params>
+                </div>
+            </fieldset>
+
+        </form>
+    </section>
+
+    <section am-padding>
+        <button class="am-btn"
+                type="button"
+                ng-click="testerController.callMethod()">Call</button>
+        <br>
+        <pre>{{testerController.display(testerController.selectedMethod, 'callerStatement')}}</pre>
+        <br>
+        <pre>{{testerController.display(testerController.selectedMethod, 'results') | json }}</pre>
+    </section>
+</article>

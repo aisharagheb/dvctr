@@ -5,7 +5,10 @@ angular.module( 'orderCloud', [
 	'ngMessages',
 	'ngTouch',
 	'ui.router',
-	'orderCloud.sdk'
+	'orderCloud.sdk',
+	'orderCloud.base',
+	'orderCloud.login',
+	'orderCloud.console'
 ])
 
 	.config( Routing )

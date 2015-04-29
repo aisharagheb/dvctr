@@ -14,7 +14,7 @@ function BaseConfig( $stateProvider ) {
 		resolve: {
 			isAuthenticated: function( Auth, $state ) {
 				return Auth.isAuthenticated().catch( function() {
-						$state.go('login');
+						$state.go( 'login' );
 					}
 				);
 			}
@@ -22,7 +22,8 @@ function BaseConfig( $stateProvider ) {
 		views: {
 			'': {
 				templateUrl: 'base/templates/base.tpl.html',
-				controller: 'BaseCtrl'
+				controller: 'BaseCtrl',
+				controllerAs: 'base'
 			},
 			'top@base': {
 				templateUrl: 'base/templates/base.top.tpl.html'
@@ -40,13 +41,14 @@ function BaseConfig( $stateProvider ) {
 	});
 }
 
-function BaseController( $scope, $state, User ) {
-	$scope.swiped = 'none';
-	$scope.setSwipe = function(direction) {
-		$scope.swiped = direction;
+function BaseController( $state, User ) {
+	var vm = this;
+	vm.swiped = 'none';
+	vm.setSwipe = function( direction ) {
+		vm.swiped = direction;
 	};
-	$scope.logout = function() {
+	vm.logout = function() {
 		User.logout();
-		$state.go('login');
+		$state.go( 'login' );
 	};
 }

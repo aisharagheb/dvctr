@@ -13,11 +13,12 @@ function LoginConfig( $stateProvider, $urlMatcherFactoryProvider ) {
 		url: '/login',
 		templateUrl: 'login/templates/login.tpl.html',
 		controller: 'LoginCtrl',
+		controllerAs: 'login',
 		resolve: {
 			isAuthenticated: function( Auth, $state ) {
 				return Auth.isAuthenticated()
 					.then( function() {
-						$state.go('base.home');
+						$state.go( 'base.home' );
 					})
 					.catch( function() {
 						return true;
@@ -28,13 +29,14 @@ function LoginConfig( $stateProvider, $urlMatcherFactoryProvider ) {
 	});
 }
 
-function LoginController( $scope, $state, User ) {
-	$scope.login = function(creds) {
-		User.login(creds).then(
+function LoginController( $state, User ) {
+	var vm = this;
+	vm.submit = function( creds ) {
+		User.login( creds ).then(
 			function() {
-				$state.go('base.home');
-			}).catch(function(ex) {
-				console.dir(ex);
+				$state.go( 'base.home' );
+			}).catch(function( ex ) {
+				console.dir( ex );
 			});
 	};
 }

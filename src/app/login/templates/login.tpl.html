@@ -1,13 +1,16 @@
 <article id="Login" am-layout="vertical-center" am-padding="large">
-	<form am-layout="stacked" name="login_form" ng-submit="login(credentials);">
-		<h3 class="am-text-c">Login</h3>
+	<form name="login_form" ng-submit="login.submit(login.credentials);">
+		<fieldset am-layout="stacked">
+			<legend><h1>Login</h1></legend>
+			<div role="group">
+				<label for="Username">Username</label>
+				<input id="Username" type="text" name="Username" ng-model="login.credentials.Username" ng-required="true"/>
 
-		<label for="Username">Username</label>
-		<input id="Username" type="text" name="Username" ng-model="credentials.Username" ng-required="true" oc-validate/>
+				<label for="Password">Password</label>
+				<input id="Password" type="password" name="Password" ng-model="login.credentials.Password" ng-required="true"/>
 
-		<label for="Password">Password</label>
-		<input id="Password" type="password" name="Password" ng-model="credentials.Password" ng-required="true" oc-validate />
-
-		<button class="am-btn" type="submit" ng-disabled="login_form.$invalid">Submit</button>
+				<button class="am-btn" type="submit" ng-disabled="login_form.$invalid">Submit</button>
+			</div>
+		</fieldset>
 	</form>
 </article>
