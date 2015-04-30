@@ -1,22 +1,27 @@
 angular.module('orderCloud.console', [])
-    .config( TesterConfig )
-    .controller('TesterParamsCtrl', TesterParamsController)
-    .directive('testerParams', TesterParams)
-    .factory('tester', TesterFactory)
-    .controller('TesterCtrl', TesterController);
+    .config( ApiConsoleConfig )
+    .controller('ApiConsoleParamsCtrl', ApiConsoleParamsController)
+    .directive('parameterInputs', ApiConsoleParams)
+    .factory('apiConsoleFactory', ApiConsoleFactory)
+    .controller('ApiConsoleCtrl', ApiConsoleController);
 
-function TesterConfig( $stateProvider, $urlMatcherFactoryProvider ) {
+function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
     $urlMatcherFactoryProvider.strictMode(false);
-    $stateProvider.state('base.tester', {
-        'url': '/tester',
+    $stateProvider.state('base.console', {
+        'url': '/console',
         'templateUrl': 'tester/templates/tester.tpl.html',
-        'controller': 'TesterCtrl',
-        'controllerAs': 'testerController',
-        data:{ pageTitle: 'API Console' }
+        'controller': 'ApiConsoleCtrl',
+        'controllerAs': 'apiConsoleController',
+        'resolve': {
+            apiConsoleServices: function (apiConsoleFactory) {
+                return apiConsoleFactory.getAngularFactories('orderCloud.sdk');
+            }
+        },
+        'data':{ pageTitle: 'API Console' }
     });
 };
 
-function TesterParamsController($scope, $templateCache, $compile) {
+function ApiConsoleParamsController($scope, $templateCache, $compile) {
     var vm = this;
 
     // Services
@@ -47,10 +52,10 @@ function TesterParamsController($scope, $templateCache, $compile) {
                     .replace(/counter-value/gi, counter++);
 
             // Initialize Resolved Parameters to null
-            if (angular.isDefined(scope.testerController.selectedMethod) &&
-                scope.testerController.selectedMethod.resolvedParameters) {
+            if (angular.isDefined(scope.apiConsoleController.selectedMethod) &&
+                scope.apiConsoleController.selectedMethod.resolvedParameters) {
                 if (isNaN(value)) {
-                    scope.testerController.selectedMethod.resolvedParameters[value] = null;
+                    scope.apiConsoleController.selectedMethod.resolvedParameters[value] = null;
                 }
             }
 
@@ -61,43 +66,35 @@ function TesterParamsController($scope, $templateCache, $compile) {
     }
 };
 
-function TesterParams() {
+function ApiConsoleParams() {
     var directiveWorker = {
         restrict: 'E/',
         template: '<section id="divId"></section>',
-        controller: 'TesterParamsCtrl',
-        controllerAs: 'testerDirectiveCtrl',
-        link: function (scope, element, attrs) {
-            scope.$watch(function () {
-                return scope.testerController.selectedMethod.params;
-            }, function (newValue, oldValue) {
-                if (angular.isDefined(newValue)) {
-                    scope.testerController.selectedMethod.resolvedParameters = {};
-                    scope.testerDirectiveCtrl.createParameters(newValue, element, scope);
-                }
-            });
-        }
-    }
+        controller: 'ApiConsoleParamsCtrl',
+        controllerAs: 'apiConsoleDirectiveCtrl',
+        link: _link
+    };
 
     return directiveWorker;
+
+    function _link(scope, element, attrs) {
+        scope.$watch(function () {
+            return scope.apiConsoleController.selectedMethod.params;
+        }, function (newValue, oldValue) {
+            if (angular.isDefined(newValue)) {
+                scope.apiConsoleController.selectedMethod.resolvedParameters = {};
+                scope.apiConsoleDirectiveCtrl.createParameters(newValue, element, scope);
+            }
+        });
+    }
 };
 
-function TesterFactory($injector, $parse) {
+function ApiConsoleFactory($injector, $parse) {
     var factory = {
         getParameters: _getParamNames,
         executeFunction: _executeFunction,
         getAngularFactories: _getServices
     };
-
-    // Variables
-    filterFactories = [
-        'Auth',
-        'Request'
-    ];
-
-    // Constants
-    STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-    ARGUMENT_NAMES = /([^\s,]+)/g;
 
     // Custom Behaviors
     function _cleanUp(parameters) {
@@ -115,11 +112,46 @@ function TesterFactory($injector, $parse) {
         return returnValue;
     };
 
+    function _booleanConverter(booleanValue) {
+        if (booleanValue === "false") {
+            return false;
+        } else if (booleanValue === "true") {
+            return true;
+        }
+
+        return booleanValue;
+    };
+
+    function _convertToNull(valueToConvert) {
+        if (valueToConvert === "null") {
+            return null;
+        }
+
+        return valueToConvert;
+    };
+
+    function _nullConverter(value) {
+        if (angular.isArray(value)) {
+            angular.forEach(value, function(v, key) {
+                value[key] = _booleanConverter(_convertToNull(v));
+            });
+
+            return value;
+        } else {
+            return _convertToNull(value);
+        }
+    };
+
     function _getParamNames (func) {
+        var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+        var ARGUMENT_NAMES = /([^\s,]+)/g;
         var fnStr = func.toString().replace(STRIP_COMMENTS, '');
         var result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
-        if(result === null)
+
+        if(result === null) {
             result = [];
+        }
+
         return result;
     };
 
@@ -158,35 +190,35 @@ function TesterFactory($injector, $parse) {
             .replace(/,\){1}/gi, ", null)");
         var results = null;
         var prefixCommand =
-            'scope.testerController.InjectorSvc_.get("' + service.name + '").' +
+            '$injector.get("' + service.name + '").' +
             method.name.toLowerCase() + '(' + parameters + ')';
 
         method.callerStatement = prefixCommand;
-        var serviceCall = scope.$eval(function(scope) {
-            return scope.testerController.InjectorSvc_.get(service.name);
-        }, scope);
 
-        if (angular.isDefined(serviceCall)) {
-            results = scope.$eval(function (scope) {
-                if (parameters.indexOf("{") != -1) {
-                    var jsonObject = JSON.parse(parameters);
-                    return serviceCall[method.name](jsonObject);
-                } else if (parameters.indexOf(",") == -1) {
-                    return serviceCall[method.name](parameters.replace(/'/gi, ""));
-                } else {
-                    return serviceCall[method.name].apply(this, parameters.split(","));
-                }
-            }, scope);
+        if (parameters.indexOf("{") != -1) {
+            var jsonObject = JSON.parse(parameters);
+            results = scope.apiConsoleController.InjectorSvc_.get(service.name)
+                [method.name](jsonObject);
+        } else if (parameters.indexOf(",") == -1) {
+            parameters = _nullConverter(parameters.replace(/'/gi, ""));
+            results = scope.apiConsoleController.InjectorSvc_.get(service.name)[method.name](parameters);
+        } else {
+            parameters = _nullConverter(parameters.split(","));
+            results = scope.apiConsoleController.InjectorSvc_.get(service.name)[method.name].apply(this, parameters);
         }
 
         if (results) {
             results
-                .then(scope.testerController.operations.successful)
-                .catch(scope.testerController.operations.exceptions);
+                .then(scope.apiConsoleController.operations.successful)
+                .catch(scope.apiConsoleController.operations.exceptions);
         }
     };
 
     function _getServices(moduleName) {
+        var filterFactories = [
+            'Auth',
+            'Request'
+        ];
         var svc = this;
         svc.services = [];
 
@@ -220,49 +252,51 @@ function TesterFactory($injector, $parse) {
     return factory;
 };
 
-function TesterController($scope, tester, $injector, $compile) {
-    var scope = this;
+function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $injector, $compile) {
+    var vm = this;
 
     // Services
-    scope.TesterSvc_ = tester;
-    scope.ScopeSvc_ = $scope;
-    scope.CompileSvc_ = $compile;
-    scope.InjectorSvc_ = $injector;
-    scope.statementPromise = undefined;
+    vm.ApiConsoleSvc_ = apiConsoleFactory;
+    vm.ScopeSvc_ = $scope;
+    vm.CompileSvc_ = $compile;
+    vm.InjectorSvc_ = $injector;
+    vm.statementPromise = undefined;
 
     // Variables
-    scope.services = [];
-    scope.selectedService = null;
-    scope.selectedMethod = {
+    vm.services = apiConsoleServices;
+    vm.selectedService = null;
+    vm.selectedMethod = {
         resolvedParameters: {},
         callerStatement: null,
         results: null,
         params: null
     };
-    scope.operations = {
+    vm.operations = {
         successful: function (data) {
-            scope.selectedMethod.results = data;
+            vm.selectedMethod.results = data;
         },
         exceptions: function(err) {
-            if (angular.isDefined(err.data)) {
+            if (angular.isDefined(err.data) && err.data) {
                 if (angular.isDefined(err.data.Message)) {
-                    scope.selectedMethod.results = err.data.Message;
+                    vm.selectedMethod.results = err.data.Message;
+                } else {
+                    vm.selectedMethod.results = err.data;
                 }
             } else {
-                scope.selectedMethod.results = err;
+                vm.selectedMethod.results = err;
             }
         }
     };
 
     // Custom Behaviors
-    scope.callMethod = function() {
-        scope.TesterSvc_.executeFunction(
-            scope.selectedService,
-            scope.selectedMethod,
+    vm.callMethod = function() {
+        vm.ApiConsoleSvc_.executeFunction(
+            vm.selectedService,
+            vm.selectedMethod,
             $scope);
     };
 
-    scope.display = function (data, property) {
+    vm.display = function (data, property) {
         if (data) {
             if (angular.isDefined(data[property])) {
                 return data[property];
@@ -270,8 +304,5 @@ function TesterController($scope, tester, $injector, $compile) {
         }
 
         return null;
-    }
-
-    // On Load
-    scope.services = scope.TesterSvc_.getAngularFactories('orderCloud.sdk');
+    };
 };

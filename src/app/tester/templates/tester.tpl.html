@@ -1,24 +1,29 @@
-<article am-wrapper>
+<article>
     <section am-padding>
         <form novalidate name="testerForm">
             <fieldset am-layout="stacked">
                 <div role="group">
+
                     <label>Choose a Service:</label>
-                    <select ng-model="testerController.selectedService"
-                            ng-options="api.name for api in testerController.services">
+                    <select ng-model="apiConsoleController.selectedService"
+                            ng-options="api.name for api in apiConsoleController.services">
                         <option value="">-- Choose Service --</option>
                     </select>
+
                     <label>Choose Operation:</label>
-                    <select ng-model="testerController.selectedMethod"
-                            ng-options="method as method.name for method in testerController.selectedService.methods"
-                            ng-change="testerController.initialize()">
+                    <select ng-model="apiConsoleController.selectedMethod"
+                            ng-options="method as method.name for method in apiConsoleController.selectedService.methods"
+                            ng-change="apiConsoleController.initialize()">
                         <option value="">-- Choose Operation --</option>
                     </select>
+
+                    <hr/>
+
                     <label>Parameters Object:</label>
-                    <pre>{{testerController.display(testerController.selectedMethod, 'params') | json}}</pre>
+                    <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'params') | json}}</pre>
 
                     <label>Please provide inputs where necessary:</label>
-                    <tester-params></tester-params>
+                    <parameter-inputs></parameter-inputs>
                 </div>
             </fieldset>
 
@@ -26,12 +31,12 @@
     </section>
 
     <section am-padding>
-        <button class="am-btn"
+        <button am-btn
                 type="button"
-                ng-click="testerController.callMethod()">Call</button>
+                ng-click="apiConsoleController.callMethod()">Call</button>
         <br>
-        <pre>{{testerController.display(testerController.selectedMethod, 'callerStatement')}}</pre>
+        <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'callerStatement')}}</pre>
         <br>
-        <pre>{{testerController.display(testerController.selectedMethod, 'results') | json }}</pre>
+        <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'results') | json }}</pre>
     </section>
 </article>
