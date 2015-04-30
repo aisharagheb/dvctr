@@ -101,6 +101,16 @@ function ApiConsoleFactory($injector, $parse) {
         var returnValue = parameters.join(",");
         var pattern = new RegExp(/,{2}/gi);
 
+        /*
+            This While loop replaces all occurrences of
+            double commas (,,) with the string ",null,".
+            i.e
+                input: assignAddress takes 4 parameters.
+                    The parameters value will be as
+                    "'SteveCoCustomer1',,,true"
+                1st Occurrence: "'SteveCoCustomer1',null,,true"
+                2nd Occurrence: "'SteveCoCustomer1',null,null,true"
+         */
         while(true) {
             if (pattern.test(returnValue)) {
                 returnValue = returnValue.replace(/,{2}/gi, ",null,");
@@ -123,7 +133,7 @@ function ApiConsoleFactory($injector, $parse) {
     };
 
     function _convertToNull(valueToConvert) {
-        if (valueToConvert === "null") {
+        if (valueToConvert === "null" || valueToConvert === "") {
             return null;
         }
 
@@ -191,14 +201,13 @@ function ApiConsoleFactory($injector, $parse) {
         var results = null;
         var prefixCommand =
             '$injector.get("' + service.name + '").' +
-            method.name.toLowerCase() + '(' + parameters + ')';
+            method.name.toLowerCase() + '(...);';
 
         method.callerStatement = prefixCommand;
 
         if (parameters.indexOf("{") != -1) {
             var jsonObject = JSON.parse(parameters);
-            results = scope.apiConsoleController.InjectorSvc_.get(service.name)
-                [method.name](jsonObject);
+            results = scope.apiConsoleController.InjectorSvc_.get(service.name)[method.name](jsonObject);
         } else if (parameters.indexOf(",") == -1) {
             parameters = _nullConverter(parameters.replace(/'/gi, ""));
             results = scope.apiConsoleController.InjectorSvc_.get(service.name)[method.name](parameters);
@@ -255,22 +264,10 @@ function ApiConsoleFactory($injector, $parse) {
 function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $injector, $compile) {
     var vm = this;
 
-    // Services
-    vm.ApiConsoleSvc_ = apiConsoleFactory;
-    vm.ScopeSvc_ = $scope;
-    vm.CompileSvc_ = $compile;
-    vm.InjectorSvc_ = $injector;
-    vm.statementPromise = undefined;
-
     // Variables
     vm.services = apiConsoleServices;
     vm.selectedService = null;
-    vm.selectedMethod = {
-        resolvedParameters: {},
-        callerStatement: null,
-        results: null,
-        params: null
-    };
+    vm.selectedMethod = null;
     vm.operations = {
         successful: function (data) {
             vm.selectedMethod.results = data;
@@ -287,6 +284,24 @@ function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $in
             }
         }
     };
+
+    // Services
+    vm.ApiConsoleSvc_ = apiConsoleFactory;
+    vm.ScopeSvc_ = $scope;
+    vm.CompileSvc_ = $compile;
+    vm.InjectorSvc_ = $injector;
+    vm.statementPromise = undefined;
+
+    // Watches
+    vm.ScopeSvc_.$watch(function () {
+        return vm.selectedService;
+    }, function (newValue, oldValue) {
+        if (vm.selectedMethod) {
+            vm.selectedMethod.callerStatement = null;
+            vm.selectedMethod.results = null;
+            vm.resolvedParameters = {};
+        }
+    });
 
     // Custom Behaviors
     vm.callMethod = function() {

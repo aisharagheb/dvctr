@@ -1,23 +1,19 @@
 <article>
     <section am-padding>
         <form novalidate name="testerForm">
-            <fieldset am-layout="stacked">
+            <fieldset  am-layout="stacked">
                 <div role="group">
-
                     <label>Choose a Service:</label>
                     <select ng-model="apiConsoleController.selectedService"
-                            ng-options="api.name for api in apiConsoleController.services">
+                            ng-options="api.name for api in ::apiConsoleController.services">
                         <option value="">-- Choose Service --</option>
                     </select>
-
                     <label>Choose Operation:</label>
                     <select ng-model="apiConsoleController.selectedMethod"
-                            ng-options="method as method.name for method in apiConsoleController.selectedService.methods"
-                            ng-change="apiConsoleController.initialize()">
+                            ng-options="method as method.name for method in apiConsoleController.selectedService.methods">
                         <option value="">-- Choose Operation --</option>
                     </select>
-
-                    <hr/>
+                    <br>
 
                     <label>Parameters Object:</label>
                     <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'params') | json}}</pre>
@@ -26,12 +22,11 @@
                     <parameter-inputs></parameter-inputs>
                 </div>
             </fieldset>
-
         </form>
     </section>
 
     <section am-padding>
-        <button am-btn
+        <button class="am-btn"
                 type="button"
                 ng-click="apiConsoleController.callMethod()">Call</button>
         <br>
