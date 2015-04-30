@@ -39,10 +39,10 @@ function ApiConsoleParamsController($scope, $templateCache, $compile) {
         angular.forEach(params, function(value, key) {
             var input = "";
 
-            if (value.indexOf('ID') == -1) {
-                input = 'tester/templates/field/object.tpl.html';
-            } else {
+            if (value.indexOf('ID') > -1 || value.substr(0, 2) == "is" || value === "search") {
                 input = 'tester/templates/field/text.tpl.html';
+            } else {
+                input = 'tester/templates/field/object.tpl.html';
             }
 
             var template = vm.TemplateCacheSvc_.get(input);
@@ -79,21 +79,39 @@ function ApiConsoleParams() {
 
     function _link(scope, element, attrs) {
         scope.$watch(function () {
-            return scope.apiConsoleController.selectedMethod.params;
+            return scope.apiConsoleController.selectedMethod;
         }, function (newValue, oldValue) {
-            if (angular.isDefined(newValue)) {
-                scope.apiConsoleController.selectedMethod.resolvedParameters = {};
-                scope.apiConsoleDirectiveCtrl.createParameters(newValue, element, scope);
+            var method = newValue;
+
+            if (method) {
+                if (method != oldValue) {
+                    if (angular.isDefined(newValue.params)) {
+                        method.callerStatement = null;
+                        method.results = null;
+                        method.resolvedParameters = {};
+
+                        scope.apiConsoleDirectiveCtrl.createParameters(
+                            method.params, element, scope);
+                        method.callerStatement =
+                            scope.apiConsoleController.ApiConsoleSvc_.getJavaScriptCommand(
+                                scope.apiConsoleController.selectedService, method,
+                                scope.apiConsoleController.ApiConsoleSvc_.getParameterString(
+                                    method.resolvedParameters
+                                ));
+                    }
+                }
             }
         });
     }
 };
 
-function ApiConsoleFactory($injector, $parse) {
+function ApiConsoleFactory($injector) {
     var factory = {
         getParameters: _getParamNames,
         executeFunction: _executeFunction,
-        getAngularFactories: _getServices
+        getAngularFactories: _getServices,
+        getJavaScriptCommand: _buildJavascriptCommand,
+        getParameterString: _getParametersList
     };
 
     // Custom Behaviors
@@ -119,7 +137,7 @@ function ApiConsoleFactory($injector, $parse) {
             }
         }
 
-        return returnValue;
+        return _nullConverter(returnValue);
     };
 
     function _booleanConverter(booleanValue) {
@@ -188,6 +206,24 @@ function ApiConsoleFactory($injector, $parse) {
         return returnValue;
     };
 
+    function _buildJavascriptCommand(service, method, parameters) {
+        if (!service || (!method || !method.name)) {
+            return null;
+        }
+
+        if (!parameters) {
+            parameters = 'null';
+        }
+
+        parameters = '(' + parameters + ')';
+        parameters = parameters
+            .replace(/\(,{1}/gi, "(null,")
+            .replace(/,\){1}/gi, ", null)")
+            .replace(/\(,\)/gi, "(null,null)");
+
+        return service.name + '.' + method.name.toLowerCase() + parameters + ';';
+    };
+
     function _executeFunction(service, method, scope) {
         var parameters = _getParametersList(method.resolvedParameters);
 
@@ -195,15 +231,7 @@ function ApiConsoleFactory($injector, $parse) {
             parameters = 'null';
         }
 
-        parameters = parameters
-            .replace(/\(,{1}/gi, "(null,")
-            .replace(/,\){1}/gi, ", null)");
-        var results = null;
-        var prefixCommand =
-            '$injector.get("' + service.name + '").' +
-            method.name.toLowerCase() + '(...);';
-
-        method.callerStatement = prefixCommand;
+        method.callerStatement = _buildJavascriptCommand(service, method, parameters);
 
         if (parameters.indexOf("{") != -1) {
             var jsonObject = JSON.parse(parameters);
@@ -264,10 +292,22 @@ function ApiConsoleFactory($injector, $parse) {
 function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $injector, $compile) {
     var vm = this;
 
-    // Variables
+    // Services
+    vm.ApiConsoleSvc_ = apiConsoleFactory;
+    vm.ScopeSvc_ = $scope;
+    vm.CompileSvc_ = $compile;
+    vm.InjectorSvc_ = $injector;
+    vm.statementPromise = undefined;
+
+    // Local Variables
     vm.services = apiConsoleServices;
     vm.selectedService = null;
-    vm.selectedMethod = null;
+    vm.selectedMethod = {
+        callerStatement: null,
+        results: null,
+        params: [],
+        resolvedParameters: {}
+    };
     vm.operations = {
         successful: function (data) {
             vm.selectedMethod.results = data;
@@ -285,21 +325,34 @@ function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $in
         }
     };
 
-    // Services
-    vm.ApiConsoleSvc_ = apiConsoleFactory;
-    vm.ScopeSvc_ = $scope;
-    vm.CompileSvc_ = $compile;
-    vm.InjectorSvc_ = $injector;
-    vm.statementPromise = undefined;
-
     // Watches
     vm.ScopeSvc_.$watch(function () {
-        return vm.selectedService;
+        return vm.selectedService
     }, function (newValue, oldValue) {
-        if (vm.selectedMethod) {
-            vm.selectedMethod.callerStatement = null;
-            vm.selectedMethod.results = null;
-            vm.resolvedParameters = {};
+        var service = newValue;
+        if (service) {
+            if (service != oldValue) {
+                vm.selectedMethod = {
+                    callerStatement: null,
+                    results: null,
+                    params: [],
+                    resolvedParameters: {}
+                };
+            }
+        }
+    });
+    vm.ScopeSvc_.$watchCollection(function () {
+        return vm.selectedMethod.resolvedParameters;
+    }, function (newValue, oldValue) {
+        var resolvedParameters = newValue;
+
+        if (resolvedParameters) {
+            vm.selectedMethod.callerStatement =
+                vm.ApiConsoleSvc_.getJavaScriptCommand(
+                    vm.selectedService, vm.selectedMethod,
+                    vm.ApiConsoleSvc_.getParameterString(
+                        resolvedParameters
+                    ));
         }
     });
 

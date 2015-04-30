@@ -9,10 +9,10 @@
     "angular-messages": "~1.4.0-rc.1",
     "angular-animate": "~1.4.0-rc.1",
     "angular-touch": "~1.4.0-rc.1",
-    "ambient": "~1.3.7",
+    "ambient": "~1.3.8",
     "jquery": "~2.1.3",
     "font-awesome": "~4.3.0",
-    "ordercloud-angular-sdk": "~0.0.11"
+    "ordercloud-angular-sdk": "~0.0.13"
   },
   "dependencies": {}
 }

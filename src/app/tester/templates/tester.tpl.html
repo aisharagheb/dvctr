@@ -1,20 +1,26 @@
 <article>
-    <section am-padding>
-        <form novalidate name="testerForm">
-            <fieldset  am-layout="stacked">
+    <section>
+        <form am-layout="vertical" am-padding="large" novalidate name="testerForm" ng-submit="apiConsoleController.callMethod()">
+            <fieldset am-layout="stacked">
+                <div am-block="gutter" role="group">
+                    <div am-block="6">
+                        <label>Choose a Service:</label>
+                        <select ng-model="apiConsoleController.selectedService"
+                                ng-options="api.name for api in ::apiConsoleController.services">
+                            <option value="">-- Choose Service --</option>
+                        </select>
+                    </div>
+                    <div am-block="6">
+                        <label>Choose Operation:</label>
+                        <select ng-model="apiConsoleController.selectedMethod"
+                                ng-options="method as method.name for method in apiConsoleController.selectedService.methods">
+                            <option value="">-- Choose Operation --</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset am-layout="stacked" am-margin="top">
                 <div role="group">
-                    <label>Choose a Service:</label>
-                    <select ng-model="apiConsoleController.selectedService"
-                            ng-options="api.name for api in ::apiConsoleController.services">
-                        <option value="">-- Choose Service --</option>
-                    </select>
-                    <label>Choose Operation:</label>
-                    <select ng-model="apiConsoleController.selectedMethod"
-                            ng-options="method as method.name for method in apiConsoleController.selectedService.methods">
-                        <option value="">-- Choose Operation --</option>
-                    </select>
-                    <br>
-
                     <label>Parameters Object:</label>
                     <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'params') | json}}</pre>
 
@@ -22,16 +28,17 @@
                     <parameter-inputs></parameter-inputs>
                 </div>
             </fieldset>
+            <fieldset am-layout>
+                <div role="group">
+                    <button class="am-btn"
+                            type="submit">Execute Script</button>
+                    <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'callerStatement')}}</pre>
+
+                </div>
+            </fieldset>
         </form>
     </section>
-
-    <section am-padding>
-        <button class="am-btn"
-                type="button"
-                ng-click="apiConsoleController.callMethod()">Call</button>
-        <br>
-        <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'callerStatement')}}</pre>
-        <br>
-        <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'results') | json }}</pre>
+    <section>
+        <pre style="border-radius:0; margin:0;">{{apiConsoleController.display(apiConsoleController.selectedMethod, 'results') | json }}</pre>
     </section>
 </article>
