@@ -42,11 +42,9 @@
             </fieldset>
             <fieldset am-layout="stacked" am-margin="top">
                 <div role="group">
-                    <section ng-show="apiConsoleController.selectedService.name && apiConsoleController.documentUrl != '#'"
-                             ng-cloak>
+                    <section ng-show="apiConsoleController.selectedService.name && apiConsoleController.documentUrl != '#'">
                         <label>{{apiConsoleController.selectedService.name}} Documentation</label>
                         <iframe ng-src="{{apiConsoleController.documentUrl}}"
-                                ng-cloak
                                 height="300px"
                                 width="100%">
                         </iframe>
