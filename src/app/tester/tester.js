@@ -116,28 +116,33 @@ function ApiConsoleFactory($injector) {
 
     // Custom Behaviors
     function _cleanUp(parameters) {
-        var returnValue = parameters.join(",");
-        var pattern = new RegExp(/,{2}/gi);
+        if (angular.isArray(parameters)) {
+            var splitCharacter = ",";
+            var returnValue = parameters.join(splitCharacter);
+            var pattern = new RegExp(/,{2}/gi);
 
-        /*
-            This While loop replaces all occurrences of
-            double commas (,,) with the string ",null,".
-            i.e
-                input: assignAddress takes 4 parameters.
-                    The parameters value will be as
-                    "'SteveCoCustomer1',,,true"
-                1st Occurrence: "'SteveCoCustomer1',null,,true"
-                2nd Occurrence: "'SteveCoCustomer1',null,null,true"
-         */
-        while(true) {
-            if (pattern.test(returnValue)) {
-                returnValue = returnValue.replace(/,{2}/gi, ",null,");
-            } else {
-                break;
+            /*
+             This While loop replaces all occurrences of
+             double commas (,,) with the string ",null,".
+             i.e
+             input: assignAddress takes 4 parameters.
+             The parameters value will be as
+             "'SteveCoCustomer1',,,true"
+             1st Occurrence: "'SteveCoCustomer1',null,,true"
+             2nd Occurrence: "'SteveCoCustomer1',null,null,true"
+             */
+            while(true) {
+                if (pattern.test(returnValue)) {
+                    returnValue = returnValue.replace(/,{2}/gi, ",null,");
+                } else {
+                    break;
+                }
             }
-        }
 
-        return _nullConverter(returnValue);
+            return _nullConverter(returnValue);
+        } else {
+            return _nullConverter(parameters);
+        }
     };
 
     function _booleanConverter(booleanValue) {
@@ -151,8 +156,16 @@ function ApiConsoleFactory($injector) {
     };
 
     function _convertToNull(valueToConvert) {
-        if (valueToConvert === "null" || valueToConvert === "") {
+        if (angular.isObject(valueToConvert)) {
+            return valueToConvert;
+        }
+
+        if (valueToConvert.indexOf("{") !== -1) {
+            return valueToConvert;
+        } else if (valueToConvert === "null" || valueToConvert === "") {
             return null;
+        } else if (valueToConvert.indexOf("'") > -1 && valueToConvert.indexOf("{") === -1){
+            return valueToConvert.replace(/'/gi, "");
         }
 
         return valueToConvert;
@@ -170,6 +183,16 @@ function ApiConsoleFactory($injector) {
         }
     };
 
+    function _convertToJSON(value) {
+        if (value) {
+            if (value.substr(0, 1) == "{") {
+                value = JSON.parse(value);
+            }
+        }
+
+        return value;
+    };
+
     function _getParamNames (func) {
         var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
         var ARGUMENT_NAMES = /([^\s,]+)/g;
@@ -185,13 +208,14 @@ function ApiConsoleFactory($injector) {
 
     function _getParametersList(resolvedParameters) {
         var parameter = [];
-        var returnValue = "";
 
         if (angular.isDefined(resolvedParameters)) {
             angular.forEach(resolvedParameters, function (value, key) {
                 if (isNaN(key)) {
-                    if (value === "") {
-                        value = "null";
+                    if (value) {
+                        if (value === "") {
+                            value = "null";
+                        }
                     }
 
                     parameter.push(value);
@@ -199,11 +223,7 @@ function ApiConsoleFactory($injector) {
             }, parameter);
         }
 
-        if (parameter) {
-            returnValue = _cleanUp(parameter);
-        }
-
-        return returnValue;
+        return _cleanUp(parameter);
     };
 
     function _buildJavaScriptCommand(service, method, parameters) {
@@ -221,28 +241,43 @@ function ApiConsoleFactory($injector) {
             .replace(/,\){1}/gi, ", null)")
             .replace(/\(,\)/gi, "(null,null)");
 
-        return service.name + '.' + method.name.toLowerCase() + parameters + ';';
+        return (service.name + '.' + method.name.toLowerCase() +  parameters + ';');
     };
 
-    function _executeFunction(service, method, scope) {
-        var parameters = _getParametersList(method.resolvedParameters);
+    function _getParameterArray(parameters) {
+        var paramsArray = [];
+        var callerSplitCharacter = ",";
 
         if (!parameters) {
             parameters = 'null';
         }
 
-        method.callerStatement = _buildJavaScriptCommand(service, method, parameters);
+        if (parameters.indexOf(callerSplitCharacter) !== -1 && parameters.indexOf("{") === -1) {
+            // Convert JSON String to Objects
+            angular.forEach(parameters.split(callerSplitCharacter), function (value, key) {
+                paramsArray.push(_convertToJSON(value));
+            }, paramsArray);
+        } else if (parameters.indexOf(callerSplitCharacter) !== -1 && parameters.indexOf("{") !== -1) {
+            angular.forEach(parameters.split(callerSplitCharacter + "{"), function (value, key) {
+                if (value.substr(value.length - 1, 1) == "}" && value.substr(0, 1) != "{") {
+                    value = "{" + value;
+                }
 
-        if (parameters.indexOf("{") != -1) {
-            var jsonObject = JSON.parse(parameters);
-            results = scope.apiConsoleController.InjectorSvc_.get(service.name)[method.name](jsonObject);
-        } else if (parameters.indexOf(",") == -1) {
-            parameters = _nullConverter(parameters.replace(/'/gi, ""));
-            results = scope.apiConsoleController.InjectorSvc_.get(service.name)[method.name](parameters);
+                paramsArray.push(_convertToJSON(value));
+            }, paramsArray);
         } else {
-            parameters = _nullConverter(parameters.split(","));
-            results = scope.apiConsoleController.InjectorSvc_.get(service.name)[method.name].apply(this, parameters);
+            paramsArray = new Array(_convertToJSON(parameters));
         }
+
+        return paramsArray;
+    };
+
+    function _executeFunction(service, method, scope) {
+        var paramsArray =
+            _nullConverter(_getParameterArray(
+                _getParametersList(method.resolvedParameters)));
+
+        results = scope.apiConsoleController.InjectorSvc_.get(service.name)[method.name].apply(this, paramsArray);
 
         if (results) {
             results
