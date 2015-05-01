@@ -21,24 +21,43 @@
             </fieldset>
             <fieldset am-layout="stacked" am-margin="top">
                 <div role="group">
-                    <label>Parameters Object:</label>
-                    <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'params') | json}}</pre>
+                    <section ng-show="(apiConsoleController.selectedMethod.params.length > 0)">
+                        <label>Parameters Object:</label>
+                        <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'params') | json}}</pre>
 
-                    <label>Please provide inputs where necessary:</label>
-                    <parameter-inputs></parameter-inputs>
+                        <label>Please provide inputs where necessary:</label>
+                        <parameter-inputs></parameter-inputs>
+                    </section>
                 </div>
             </fieldset>
-            <fieldset am-layout>
+            <fieldset am-layout am-margin="top">
                 <div role="group">
-                    <button class="am-btn"
-                            type="submit">Execute Script</button>
-                    <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'callerStatement')}}</pre>
-
+                    <section ng-show="apiConsoleController.selectedMethod.callerStatement">
+                        <button class="am-btn"
+                                type="submit">Execute My Script</button>
+                        <hr>
+                        <h5>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'callerStatement')}}</h5>
+                    </section>
+                </div>
+            </fieldset>
+            <fieldset am-layout="stacked" am-margin="top">
+                <div role="group">
+                    <section ng-show="apiConsoleController.selectedService.name || apiConsoleController.documentUrl != '#'"
+                             ng-cloak>
+                        <label>{{apiConsoleController.selectedService.name}} Documentation</label>
+                        <iframe ng-src="{{apiConsoleController.documentUrl}}"
+                                ng-cloak
+                                height="300px"
+                                width="100%">
+                        </iframe>
+                    </section>
                 </div>
             </fieldset>
         </form>
     </section>
     <section>
-        <pre style="border-radius:0; margin:0;">{{apiConsoleController.display(apiConsoleController.selectedMethod, 'results') | json }}</pre>
+        <section ng-show="apiConsoleController.selectedMethod.results">
+            <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'results') | json }}</pre>
+        </section>
     </section>
 </article>

@@ -85,7 +85,7 @@ function ApiConsoleParams() {
 
             if (method) {
                 if (method != oldValue) {
-                    if (angular.isDefined(newValue.params)) {
+                    if (angular.isDefined(method.params)) {
                         method.callerStatement = null;
                         method.results = null;
                         method.resolvedParameters = {};
@@ -110,7 +110,7 @@ function ApiConsoleFactory($injector) {
         getParameters: _getParamNames,
         executeFunction: _executeFunction,
         getAngularFactories: _getServices,
-        getJavaScriptCommand: _buildJavascriptCommand,
+        getJavaScriptCommand: _buildJavaScriptCommand,
         getParameterString: _getParametersList
     };
 
@@ -206,7 +206,7 @@ function ApiConsoleFactory($injector) {
         return returnValue;
     };
 
-    function _buildJavascriptCommand(service, method, parameters) {
+    function _buildJavaScriptCommand(service, method, parameters) {
         if (!service || (!method || !method.name)) {
             return null;
         }
@@ -231,7 +231,7 @@ function ApiConsoleFactory($injector) {
             parameters = 'null';
         }
 
-        method.callerStatement = _buildJavascriptCommand(service, method, parameters);
+        method.callerStatement = _buildJavaScriptCommand(service, method, parameters);
 
         if (parameters.indexOf("{") != -1) {
             var jsonObject = JSON.parse(parameters);
@@ -289,7 +289,7 @@ function ApiConsoleFactory($injector) {
     return factory;
 };
 
-function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $injector, $compile) {
+function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $injector, $compile, $sce) {
     var vm = this;
 
     // Services
@@ -297,6 +297,7 @@ function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $in
     vm.ScopeSvc_ = $scope;
     vm.CompileSvc_ = $compile;
     vm.InjectorSvc_ = $injector;
+    vm.SanitizerSvc_ = $sce;
     vm.statementPromise = undefined;
 
     // Local Variables
@@ -308,6 +309,7 @@ function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $in
         params: [],
         resolvedParameters: {}
     };
+    vm.documentUrl = "#";
     vm.operations = {
         successful: function (data) {
             vm.selectedMethod.results = data;
@@ -332,6 +334,7 @@ function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $in
         var service = newValue;
         if (service) {
             if (service != oldValue) {
+                vm.setDocumentUri(service.name);
                 vm.selectedMethod = {
                     callerStatement: null,
                     results: null,
@@ -372,5 +375,14 @@ function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $in
         }
 
         return null;
+    };
+
+    vm.setDocumentUri = function (serviceName) {
+        if (serviceName) {
+            var baseUri = "http://four51.github.io/aveda-docs/reference/#/" + serviceName.toLowerCase();
+            vm.documentUrl = $sce.trustAsResourceUrl(((serviceName === "Address") ? baseUri + "es" : baseUri + "s"));
+        } else {
+            vm.documentUrl =  $sce.trustAsResourceUrl("#");
+        }
     };
 };
