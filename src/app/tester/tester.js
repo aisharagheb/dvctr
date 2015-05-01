@@ -380,9 +380,10 @@ function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $in
     vm.setDocumentUri = function (serviceName) {
         if (serviceName) {
             var baseUri = "http://four51.github.io/aveda-docs/reference/#/" + serviceName.toLowerCase();
-            vm.documentUrl = $sce.trustAsResourceUrl(((serviceName === "Address") ? baseUri + "es" : baseUri + "s"));
+            vm.documentUrl = vm.SanitizerSvc_.trustAsResourceUrl(
+                ((serviceName === "Address") ? baseUri + "es" : baseUri + "s"));
         } else {
-            vm.documentUrl =  $sce.trustAsResourceUrl("#");
+            vm.documentUrl =  vm.SanitizerSvc_.trustAsResourceUrl("#");
         }
     };
 };
