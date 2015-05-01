@@ -68,7 +68,7 @@ function ApiConsoleParamsController($scope, $templateCache, $compile) {
 
 function ApiConsoleParams() {
     var directiveWorker = {
-        restrict: 'E/',
+        restrict: 'E',
         template: '<section id="divId"></section>',
         controller: 'ApiConsoleParamsCtrl',
         controllerAs: 'apiConsoleDirectiveCtrl',
