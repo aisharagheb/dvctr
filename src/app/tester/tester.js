@@ -364,7 +364,7 @@ function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $in
         vm.ApiConsoleSvc_.executeFunction(
             vm.selectedService,
             vm.selectedMethod,
-            $scope);
+            vm.ScopeSvc_);
     };
 
     vm.display = function (data, property) {
