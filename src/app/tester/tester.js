@@ -2,7 +2,8 @@ angular.module('orderCloud.console', [])
     .config( ApiConsoleConfig )
     .controller('ApiConsoleParamsCtrl', ApiConsoleParamsController)
     .directive('parameterInputs', ApiConsoleParams)
-    .factory('apiConsoleFactory', ApiConsoleFactory)
+    .factory('ApiConsoleFactory', ApiConsoleFactory)
+    .factory('ApiObjectFactory', ApiObjectFactory)
     .controller('ApiConsoleCtrl', ApiConsoleController);
 
 function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
@@ -13,15 +14,15 @@ function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
         'controller': 'ApiConsoleCtrl',
         'controllerAs': 'apiConsoleController',
         'resolve': {
-            apiConsoleServices: function (apiConsoleFactory) {
-                return apiConsoleFactory.getAngularFactories('orderCloud.sdk');
+            ApiConsoleServices: function (ApiConsoleFactory) {
+                return ApiConsoleFactory.getAngularFactories('orderCloud.sdk');
             }
         },
         'data':{ pageTitle: 'API Console' }
     });
 };
 
-function ApiConsoleParamsController($scope, $templateCache, $compile) {
+function ApiConsoleParamsController($scope, $templateCache, $compile, ApiObjectFactory) {
     var vm = this;
 
     // Services
@@ -39,10 +40,13 @@ function ApiConsoleParamsController($scope, $templateCache, $compile) {
         angular.forEach(params, function(value, key) {
             var input = "";
 
-            if (value.indexOf('ID') > -1 || value.substr(0, 2) == "is" || value === "search") {
-                input = 'tester/templates/field/text.tpl.html';
-            } else {
+            if (ApiObjectFactory[value]) {
                 input = 'tester/templates/field/object.tpl.html';
+                scope.apiConsoleController.selectedMethod.resolvedParameters[value] = JSON.stringify(ApiObjectFactory[value](), null, 4);
+            }
+            else {
+                input = 'tester/templates/field/text.tpl.html';
+                scope.apiConsoleController.selectedMethod.resolvedParameters[value] = null;
             }
 
             var template = vm.TemplateCacheSvc_.get(input);
@@ -52,12 +56,12 @@ function ApiConsoleParamsController($scope, $templateCache, $compile) {
                     .replace(/counter-value/gi, counter++);
 
             // Initialize Resolved Parameters to null
-            if (angular.isDefined(scope.apiConsoleController.selectedMethod) &&
+            /*if (angular.isDefined(scope.apiConsoleController.selectedMethod) &&
                 scope.apiConsoleController.selectedMethod.resolvedParameters) {
                 if (isNaN(value)) {
                     scope.apiConsoleController.selectedMethod.resolvedParameters[value] = null;
                 }
-            }
+            }*/
 
             element.append(template);
         });
@@ -296,7 +300,7 @@ function ApiConsoleFactory($injector) {
 
         angular.forEach(angular.module(moduleName)._invokeQueue, function(component) {
             var componentName = component[2][0];
-            if (component[1] == 'factory' && filterFactories.indexOf(componentName) == -1) {
+            if (component[1] == 'factory' && filterFactories.indexOf(componentName) == -1 && componentName.indexOf('Extend') == -1) {
                 var factory = {
                     name: componentName,
                     methods: []
@@ -324,11 +328,85 @@ function ApiConsoleFactory($injector) {
     return factory;
 };
 
-function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $injector, $compile, $sce) {
+function ApiObjectFactory() {
+    var factory = {
+        address: _address,
+        buyer: _buyer,
+        category: _category,
+        costCenter: _costCenter,
+        coupon: _coupon,
+        giftCard: _giftCard,
+        group: _group,
+        orderField: _orderField,
+        priceSchedule: _priceSchedule,
+        product: _product,
+        spendingAccount: _spendingAccount,
+        user: _user,
+        userField: _userField
+    };
+
+    function _address() {
+        return {
+            "AddressName": null
+        }
+    }
+
+    function _buyer() {
+
+    }
+
+    function _category() {
+
+    }
+
+    function _costCenter() {
+
+    }
+
+    function _coupon() {
+
+    }
+
+    function _giftCard() {
+
+    }
+
+    function _group() {
+
+    }
+
+    function _orderField() {
+
+    }
+
+    function _priceSchedule() {
+
+    }
+
+    function _product() {
+
+    }
+
+    function _spendingAccount() {
+
+    }
+
+    function _user() {
+
+    }
+
+    function _userField() {
+
+    }
+
+    return factory;
+}
+
+function ApiConsoleController($scope, $injector, $compile, $sce, ApiConsoleFactory, ApiConsoleServices) {
     var vm = this;
 
     // Services
-    vm.ApiConsoleSvc_ = apiConsoleFactory;
+    vm.ApiConsoleSvc_ = ApiConsoleFactory;
     vm.ScopeSvc_ = $scope;
     vm.CompileSvc_ = $compile;
     vm.InjectorSvc_ = $injector;
@@ -336,7 +414,7 @@ function ApiConsoleController($scope, apiConsoleFactory, apiConsoleServices, $in
     vm.statementPromise = undefined;
 
     // Local Variables
-    vm.services = apiConsoleServices;
+    vm.services = ApiConsoleServices;
     vm.selectedService = null;
     vm.selectedMethod = {
         callerStatement: null,

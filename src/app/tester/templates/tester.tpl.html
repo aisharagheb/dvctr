@@ -22,7 +22,7 @@
             <fieldset am-layout="stacked" am-margin="top">
                 <div role="group">
                     <section ng-show="(apiConsoleController.selectedMethod.params.length > 0)">
-                        <label>Parameters Object:</label>
+                        <label>Parameters:</label>
                         <pre>{{apiConsoleController.display(apiConsoleController.selectedMethod, 'params') | json}}</pre>
 
                         <label>Please provide inputs where necessary:</label>
