@@ -1,0 +1,12 @@
+<label for="tmpValueId">counter-value. tmpValue</label>
+<textarea rows="10" cols="100"
+          ng-model="apiConsoleController.selectedMethod.resolvedParameters.propertyName"
+          id="tmpValueId"></textarea><br>
+
+<!--Original idea for creating the object to be posted - Switched back to textarea for developers to be able to paste in objects-->
+<!--<pre>{{apiConsoleController.selectedMethod.resolvedParameters.propertyName | json}}</pre>-->
+<!--<div ng-repeat="(key, value) in apiConsoleController.selectedMethod.resolvedParameters.propertyName">
+    <label for="{{key}}">{{key}}</label>
+    <input ng-if="apiConsoleController.typeof(value) != 'boolean'" id="{{key}}" type="text" ng-model="apiConsoleController.selectedMethod.resolvedParameters.propertyName[key]" />
+    <input ng-if="apiConsoleController.typeof(value) == 'boolean'" type="checkbox" ng-model="apiConsoleController.selectedMethod.resolvedParameters.propertyName[key]" />
+</div>-->

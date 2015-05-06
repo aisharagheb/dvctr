@@ -10,7 +10,7 @@ function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
     $urlMatcherFactoryProvider.strictMode(false);
     $stateProvider.state('base.console', {
         'url': '/console',
-        'templateUrl': 'tester/templates/tester.tpl.html',
+        'templateUrl': 'console/templates/console.tpl.html',
         'controller': 'ApiConsoleCtrl',
         'controllerAs': 'apiConsoleController',
         'resolve': {
@@ -41,11 +41,11 @@ function ApiConsoleParamsController($scope, $templateCache, $compile, ApiObjectF
             var input = "";
 
             if (ApiObjectFactory[value]) {
-                input = 'tester/templates/field/object.tpl.html';
+                input = 'console/templates/field/object.tpl.html';
                 scope.apiConsoleController.selectedMethod.resolvedParameters[value] = JSON.stringify(ApiObjectFactory[value](), null, 4);
             }
             else {
-                input = 'tester/templates/field/text.tpl.html';
+                input = 'console/templates/field/text.tpl.html';
                 scope.apiConsoleController.selectedMethod.resolvedParameters[value] = null;
             }
 
@@ -347,56 +347,169 @@ function ApiObjectFactory() {
 
     function _address() {
         return {
-            "AddressName": null
+            "ID": "",
+            "AddressName": "",
+            "CompanyName": "",
+            "FirstName": "",
+            "LastName": "",
+            "Street1": "",
+            "Street2": "",
+            "City": "",
+            "State": "",
+            "Zip": "",
+            "Country": "",
+            "Phone": ""
         }
     }
 
     function _buyer() {
-
+        return {
+            "ID": "",
+            "Name": "",
+            "Active": false
+        }
     }
 
     function _category() {
-
+        return {
+            "ID": "",
+            "Name": "",
+            "Description": "",
+            "ListOrder": 0,
+            "Active": false,
+            "ParentID": ""
+        }
     }
 
     function _costCenter() {
-
+        return {
+            "ID": "",
+            "Name": "",
+            "Description": ""
+        }
     }
 
     function _coupon() {
-
+        return {
+            "ID": "",
+            "CouponCode": "",
+            "Label": "",
+            "Description": "",
+            "DiscountAmountType": 0,
+            "Enabled": false,
+            "RedeemLimit": 0,
+            "StartDate": "",
+            "ExpirationDate": "",
+            "DiscountAmount": 0.0,
+            "MinimumPurchase": 0.0,
+            "CouponType": 0,
+            "PartyType": 0,
+            "ApplyToSubTotal": false,
+            "ApplyToShipping": false,
+            "ApplyToTax": false,
+            "Status": 0
+        }
     }
 
     function _giftCard() {
-
+        return {
+            "Name": "",
+            "ID": "",
+            "StartDate": "0001-01-01T00:00:00",
+            "ExpirationDate": "",
+            "HideWhenUnavailable": false,
+            "MaxPercentOfTotal": 0,
+            "Balance": 0.0,
+            "Code": ""
+        }
     }
 
     function _group() {
-
+        return {
+            "ID": "",
+            "Name": "",
+            "Description": ""
+        }
     }
 
     function _orderField() {
+        return {
 
+        }
     }
 
     function _priceSchedule() {
-
+        return {
+            "ProductID": "",
+            "Name": "",
+            "ApplyTax": false,
+            "ApplyShipping": false,
+            "MinQuantity": "",
+            "MaxQuantity": "",
+            "UseCumulativeQuantity": false,
+            "RestrictedQuantity": false,
+            "PriceBreaks": ""
+        }
     }
 
     function _product() {
-
+        return {
+            "ID": "",
+            "ExternalID": "",
+            "Description": "",
+            "Name": "",
+            "QuantityMultiplier": 0,
+            "ShipWeight": 0,
+            "Active": false,
+            "Type": "Static",
+            "StdOrders": false,
+            "ReplOrders": false,
+            "InventoryEnabled": false,
+            "InventoryNotificationPoint": "",
+            "VariantLevelInventory": false,
+            "StaticSpecGroups": "",
+            "ExceedInventory": false,
+            "DisplayInventory": false
+        }
     }
 
     function _spendingAccount() {
-
+        return {
+            "Name": "",
+            "ID": "",
+            "ActionOnExceed": "None",
+            "AllowExceed": false,
+            "ExceedApprovingPartyID": "",
+            "ExceedApprovingPartyType": "User",
+            "AutoRenew": false,
+            "AutoRenewAmount": "",
+            "AutoRenewRollOverBalance": false,
+            "AutoRenewDays": "",
+            "HideWhenUnavailable": false,
+            "MaxPercentOfTotal": 0,
+            "AllowAsPaymentMethod": false,
+            "Balance": 0.0,
+            "AssignedUserID": ""
+        }
     }
 
     function _user() {
-
+        return {
+            "ID": "",
+            "Username": "",
+            "FirstName": "",
+            "LastName": "",
+            "Email": "",
+            "Phone": "",
+            "TermsAccepted": "0001-01-01T00:00:00",
+            "Active": false
+        }
     }
 
     function _userField() {
+        return {
 
+        }
     }
 
     return factory;
@@ -498,5 +611,9 @@ function ApiConsoleController($scope, $injector, $compile, $sce, ApiConsoleFacto
         } else {
             vm.documentUrl =  vm.SanitizerSvc_.trustAsResourceUrl("#");
         }
+    };
+
+    vm.typeof = function(value) {
+        return typeof(value);
     };
 };
