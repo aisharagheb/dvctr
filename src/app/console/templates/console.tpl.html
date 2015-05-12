@@ -1,50 +1,58 @@
 <article id="Console">
     <section id="ConsoleExplorer" am-padding="large">
-        <form am-layout="vertical" novalidate name="consoleForm" ng-submit="console.callMethod()">
+        <form am-layout="vertical" name="ApiConsole" ng-submit="console.Execute()" novalidate>
             <fieldset am-layout="stacked">
                 <div role="group">
                     <div am-block="gutter">
                         <div am-block="6">
                             <label>Choose a Service:</label>
-                            <select ng-model="console.selectedService"
-                                    ng-options="api.name for api in ::console.services">
-                                <option value="">-- Choose Service --</option>
+                            <select ng-model="console.SelectedService"
+                                    ng-options="api.name for api in console.Services">
+                                <option value="">--None--</option>
                             </select>
                         </div>
                         <div am-block="6">
                             <label>Choose a Method:</label>
-                            <select ng-model="console.selectedMethod"
-                                    ng-options="method as method.name for method in console.selectedService.methods">
-                                <option value="">-- Choose Method --</option>
+                            <select ng-model="console.SelectedMethod"
+                                    ng-options="method.name for method in console.SelectedService.methods">
+                                <option value="">--None--</option>
                             </select>
                         </div>
                     </div>
                 </div>
             </fieldset>
-            <fieldset am-layout="stacked" ng-show="console.selectedMethod.callerStatement" am-margin="top large">
-                <div class="caller-setup" role="group" style="width:100%;">
-                    <div>
-                        <div ng-show="(console.selectedMethod.params.length > 0)">
-                            <legend class="am-text-c">Method Parameters</legend>
-                            <parameter-inputs></parameter-inputs>
-                        </div>
-                        <div ng-hide="(console.selectedMethod.params.length > 0)">
-                            <h5>No Parameters Required</h5>
+            <fieldset am-layout="stacked" ng-show="console.SelectedMethod" am-margin="top large">
+                <div class="caller-setup" role="group">
+                    <div ng-show="console.SelectedMethod.resolvedParameters.length">
+                        <legend class="am-text-c">Method Parameters</legend>
+                        <div ng-repeat="parameter in console.SelectedMethod.resolvedParameters">
+                            <div ng-if="parameter.Type == 'text'">
+                                <label>{{($index + 1) + '. ' + parameter.Name}}</label>
+                                <input name="{{parameter.Name}}" type="text" ng-model="parameter.Value" ng-required="parameter.Required"/>
+                            </div>
+                            <div ng-if="parameter.Type == 'object'">
+                                <label>{{($index + 1) + '. ' + parameter.Name}}</label>
+                                <textarea name="{{parameter.Name}}"
+                                          rows="10"
+                                          ng-model="parameter.Value"
+                                          ng-required="parameter.Required"
+                                          ng-change="console.ValidateParamObject(parameter)">
+                                </textarea>
+                            </div>
                         </div>
                     </div>
                     <div class="caller am-shadow-z1">
-                        <pre>{{console.display(console.selectedMethod, 'callerStatement')}}</pre>
-                        <button class="am-btn am-primary"
-                                type="submit">Execute my script <i class="fa fa-play-circle-o"></i></button>
+                        <pre>{{console.SelectedService.name + '.' + console.SelectedMethod.name + '('}}<span ng-repeat="p in console.SelectedMethod.resolvedParameters">{{(p.Value || p.Name) + (!$last ? ', ' : ')') }}</span></pre>
+                        <button type="submit" class="am-btn am-primary" ng-disabled="ApiConsole.$invalid">Execute</button>
                     </div>
                 </div>
             </fieldset>
         </form>
     </section>
     <section id="ConsoleResults">
-        <div ng-show="console.selectedMethod.results">
-            <h6>RESPONSE <i class="fa fa-code"></i></h6>
-            <pre>{{console.display(console.selectedMethod, 'results') | json }}</pre>
+        <div ng-show="console.Response">
+            <h6>Response</h6>
+            <pre ng-show="console.Response">{{console.Response | json}}</pre>
         </div>
     </section>
 </article>
