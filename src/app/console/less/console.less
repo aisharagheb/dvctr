@@ -1,0 +1,67 @@
+#Console {
+  @media(orientation:portrait) {
+	display:block;
+  }
+}
+
+#ConsoleExplorer,
+#ConsoleResults {
+  overflow-y:auto;
+}
+
+#ConsoleResults {
+  background-color:#f1f1f1;
+  pre {
+	margin:0;
+	border-radius: 0;
+  }
+  h6 {
+	background-color:@am-clr-primary-bg;
+	color:#fff;
+	text-align:center;
+	padding:@am-root-padding/2;
+	margin:0;
+  }
+}
+parameter-inputs {
+  width:100%;
+}
+.caller {
+  border-radius:4px;
+  overflow:hidden;
+  display:flex;
+  flex-flow:column nowrap;
+  pre {
+	flex:1 0 auto;
+	background-color:#fff;
+	color:@am-clr-body-text;
+  }
+  button {
+	flex:0 1 auto;
+  }
+  pre,
+  button {
+	width:100%;
+	margin:0;
+	border-radius:0;
+  }
+}
+
+.caller-setup {
+  display:flex;
+  flex-flow:row nowrap;
+  & > div {
+	flex:1;
+	@media(orientation:landscape) {
+	  &:not(.caller) {
+		padding-right: @am-root-padding;
+	  }
+	}
+  }
+  @media(orientation:portrait) {
+	flex-flow:column nowrap;
+	.caller {
+	  margin-top:@am-root-margin;
+	}
+  }
+}

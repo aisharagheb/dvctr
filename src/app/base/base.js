@@ -41,14 +41,14 @@ function BaseConfig( $stateProvider ) {
 	});
 }
 
-function BaseController( $state, User ) {
+function BaseController( $state, Users ) {
 	var vm = this;
 	vm.swiped = 'none';
 	vm.setSwipe = function( direction ) {
 		vm.swiped = direction;
 	};
 	vm.logout = function() {
-		User.logout();
+		Users.Logout();
 		$state.go( 'login' );
 	};
 }

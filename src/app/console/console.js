@@ -3,7 +3,6 @@ angular.module('orderCloud.console', [])
     .controller('ApiConsoleParamsCtrl', ApiConsoleParamsController)
     .directive('parameterInputs', ApiConsoleParams)
     .factory('ApiConsoleFactory', ApiConsoleFactory)
-    .factory('ApiObjectFactory', ApiObjectFactory)
     .controller('ApiConsoleCtrl', ApiConsoleController);
 
 function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
@@ -12,7 +11,7 @@ function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
         'url': '/console',
         'templateUrl': 'console/templates/console.tpl.html',
         'controller': 'ApiConsoleCtrl',
-        'controllerAs': 'apiConsoleController',
+        'controllerAs': 'console',
         'resolve': {
             ApiConsoleServices: function (ApiConsoleFactory) {
                 return ApiConsoleFactory.getAngularFactories('orderCloud.sdk');
@@ -22,7 +21,7 @@ function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
     });
 };
 
-function ApiConsoleParamsController($scope, $templateCache, $compile, ApiObjectFactory) {
+function ApiConsoleParamsController($scope, $templateCache, $compile, $resource, apiurl) {
     var vm = this;
 
     // Services
@@ -37,36 +36,43 @@ function ApiConsoleParamsController($scope, $templateCache, $compile, ApiObjectF
 
         $(element).empty();
         var counter = 1;
-        angular.forEach(params, function(value, key) {
-            var input = "";
+		if (scope.console.selectedMethod.name) {
+			$resource( apiurl + '/docs/' + scope.console.selectedService.name + '/' + scope.console.selectedMethod.name).get().$promise
+				.then( createForm );
+		}
 
-            if (ApiObjectFactory[value]) {
-                input = 'console/templates/field/object.tpl.html';
-                scope.apiConsoleController.selectedMethod.resolvedParameters[value] = JSON.stringify(ApiObjectFactory[value](), null, 4);
-            }
-            else {
-                input = 'console/templates/field/text.tpl.html';
-                scope.apiConsoleController.selectedMethod.resolvedParameters[value] = null;
-            }
+		function createForm(endpoint) {
+			angular.forEach(params, function(value, key) {
+				var inputText = false,
+					input;
 
-            var template = vm.TemplateCacheSvc_.get(input);
-            template =
-                template.replace(/tmpValue/gi, value)
-                    .replace(/propertyName/gi, value)
-                    .replace(/counter-value/gi, counter++);
+				angular.forEach(endpoint.Parameters, function(parameter) {
+					if (parameter.Name == value) {
+						inputText = true;
+					}
+				});
 
-            // Initialize Resolved Parameters to null
-            /*if (angular.isDefined(scope.apiConsoleController.selectedMethod) &&
-                scope.apiConsoleController.selectedMethod.resolvedParameters) {
-                if (isNaN(value)) {
-                    scope.apiConsoleController.selectedMethod.resolvedParameters[value] = null;
-                }
-            }*/
+				if (inputText) {
+					input = 'console/templates/field/text.tpl.html';
+					scope.console.selectedMethod.resolvedParameters[value] = null;
+				}
+				else {
+					input = 'console/templates/field/object.tpl.html';
+					scope.console.selectedMethod.resolvedParameters[value] = endpoint.RequestBody ? endpoint.RequestBody.Sample : null;
 
-            element.append(template);
-        });
+				}
 
-        vm.CompileSvc_(element.contents())($scope);
+				var template = vm.TemplateCacheSvc_.get(input);
+				template =
+					template.replace(/tmpValue/gi, value)
+						.replace(/propertyName/gi, value)
+						.replace(/counter-value/gi, counter++);
+
+				element.append(template);
+			});
+
+			vm.CompileSvc_(element.contents())($scope);
+		}
     }
 };
 
@@ -83,7 +89,7 @@ function ApiConsoleParams() {
 
     function _link(scope, element, attrs) {
         scope.$watch(function () {
-            return scope.apiConsoleController.selectedMethod;
+            return scope.console.selectedMethod;
         }, function (newValue, oldValue) {
             var method = newValue;
 
@@ -97,9 +103,9 @@ function ApiConsoleParams() {
                         scope.apiConsoleDirectiveCtrl.createParameters(
                             method.params, element, scope);
                         method.callerStatement =
-                            scope.apiConsoleController.ApiConsoleSvc_.getJavaScriptCommand(
-                                scope.apiConsoleController.selectedService, method,
-                                scope.apiConsoleController.ApiConsoleSvc_.getParameterString(
+                            scope.console.ApiConsoleSvc_.getJavaScriptCommand(
+                                scope.console.selectedService, method,
+                                scope.console.ApiConsoleSvc_.getParameterString(
                                     method.resolvedParameters
                                 ));
                     }
@@ -245,7 +251,7 @@ function ApiConsoleFactory($injector) {
             .replace(/,\){1}/gi, ", null)")
             .replace(/\(,\)/gi, "(null,null)");
 
-        return (service.name + '.' + method.name.toLowerCase() +  parameters + ';');
+        return (service.name + '.' + method.name +  parameters + ';');
     };
 
     function _getParameterArray(parameters) {
@@ -281,12 +287,12 @@ function ApiConsoleFactory($injector) {
             _nullConverter(_getParameterArray(
                 _getParametersList(method.resolvedParameters)));
 
-        results = scope.apiConsoleController.InjectorSvc_.get(service.name)[method.name].apply(this, paramsArray);
+        results = scope.console.InjectorSvc_.get(service.name)[method.name].apply(this, paramsArray);
 
         if (results) {
             results
-                .then(scope.apiConsoleController.operations.successful)
-                .catch(scope.apiConsoleController.operations.exceptions);
+                .then(scope.console.operations.successful)
+                .catch(scope.console.operations.exceptions);
         }
     };
 
@@ -328,194 +334,7 @@ function ApiConsoleFactory($injector) {
     return factory;
 };
 
-function ApiObjectFactory() {
-    var factory = {
-        address: _address,
-        buyer: _buyer,
-        category: _category,
-        costCenter: _costCenter,
-        coupon: _coupon,
-        giftCard: _giftCard,
-        group: _group,
-        orderField: _orderField,
-        priceSchedule: _priceSchedule,
-        product: _product,
-        spendingAccount: _spendingAccount,
-        user: _user,
-        userField: _userField
-    };
-
-    function _address() {
-        return {
-            "ID": "",
-            "AddressName": "",
-            "CompanyName": "",
-            "FirstName": "",
-            "LastName": "",
-            "Street1": "",
-            "Street2": "",
-            "City": "",
-            "State": "",
-            "Zip": "",
-            "Country": "",
-            "Phone": ""
-        }
-    }
-
-    function _buyer() {
-        return {
-            "ID": "",
-            "Name": "",
-            "Active": false
-        }
-    }
-
-    function _category() {
-        return {
-            "ID": "",
-            "Name": "",
-            "Description": "",
-            "ListOrder": 0,
-            "Active": false,
-            "ParentID": ""
-        }
-    }
-
-    function _costCenter() {
-        return {
-            "ID": "",
-            "Name": "",
-            "Description": ""
-        }
-    }
-
-    function _coupon() {
-        return {
-            "ID": "",
-            "CouponCode": "",
-            "Label": "",
-            "Description": "",
-            "DiscountAmountType": 0,
-            "Enabled": false,
-            "RedeemLimit": 0,
-            "StartDate": "",
-            "ExpirationDate": "",
-            "DiscountAmount": 0.0,
-            "MinimumPurchase": 0.0,
-            "CouponType": 0,
-            "PartyType": 0,
-            "ApplyToSubTotal": false,
-            "ApplyToShipping": false,
-            "ApplyToTax": false,
-            "Status": 0
-        }
-    }
-
-    function _giftCard() {
-        return {
-            "Name": "",
-            "ID": "",
-            "StartDate": "0001-01-01T00:00:00",
-            "ExpirationDate": "",
-            "HideWhenUnavailable": false,
-            "MaxPercentOfTotal": 0,
-            "Balance": 0.0,
-            "Code": ""
-        }
-    }
-
-    function _group() {
-        return {
-            "ID": "",
-            "Name": "",
-            "Description": ""
-        }
-    }
-
-    function _orderField() {
-        return {
-
-        }
-    }
-
-    function _priceSchedule() {
-        return {
-            "ProductID": "",
-            "Name": "",
-            "ApplyTax": false,
-            "ApplyShipping": false,
-            "MinQuantity": "",
-            "MaxQuantity": "",
-            "UseCumulativeQuantity": false,
-            "RestrictedQuantity": false,
-            "PriceBreaks": ""
-        }
-    }
-
-    function _product() {
-        return {
-            "ID": "",
-            "ExternalID": "",
-            "Description": "",
-            "Name": "",
-            "QuantityMultiplier": 0,
-            "ShipWeight": 0,
-            "Active": false,
-            "Type": "Static",
-            "StdOrders": false,
-            "ReplOrders": false,
-            "InventoryEnabled": false,
-            "InventoryNotificationPoint": "",
-            "VariantLevelInventory": false,
-            "StaticSpecGroups": "",
-            "ExceedInventory": false,
-            "DisplayInventory": false
-        }
-    }
-
-    function _spendingAccount() {
-        return {
-            "Name": "",
-            "ID": "",
-            "ActionOnExceed": "None",
-            "AllowExceed": false,
-            "ExceedApprovingPartyID": "",
-            "ExceedApprovingPartyType": "User",
-            "AutoRenew": false,
-            "AutoRenewAmount": "",
-            "AutoRenewRollOverBalance": false,
-            "AutoRenewDays": "",
-            "HideWhenUnavailable": false,
-            "MaxPercentOfTotal": 0,
-            "AllowAsPaymentMethod": false,
-            "Balance": 0.0,
-            "AssignedUserID": ""
-        }
-    }
-
-    function _user() {
-        return {
-            "ID": "",
-            "Username": "",
-            "FirstName": "",
-            "LastName": "",
-            "Email": "",
-            "Phone": "",
-            "TermsAccepted": "0001-01-01T00:00:00",
-            "Active": false
-        }
-    }
-
-    function _userField() {
-        return {
-
-        }
-    }
-
-    return factory;
-}
-
-function ApiConsoleController($scope, $injector, $compile, $sce, ApiConsoleFactory, ApiConsoleServices) {
+function ApiConsoleController($scope, $resource, $injector, $compile, $sce, apiurl, ApiConsoleFactory, ApiConsoleServices) {
     var vm = this;
 
     // Services
@@ -559,6 +378,7 @@ function ApiConsoleController($scope, $injector, $compile, $sce, ApiConsoleFacto
     }, function (newValue, oldValue) {
         var service = newValue;
         if (service) {
+            vm.documentation = $resource(apiurl + '/docs/' + service.name).get();
             if (service != oldValue) {
                 vm.setDocumentUri(service.name);
                 vm.selectedMethod = {

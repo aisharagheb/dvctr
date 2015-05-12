@@ -29,10 +29,10 @@ function LoginConfig( $stateProvider, $urlMatcherFactoryProvider ) {
 	});
 }
 
-function LoginController( $state, User ) {
+function LoginController( $state, Users ) {
 	var vm = this;
 	vm.submit = function( creds ) {
-		User.login( creds ).then(
+		Users.Login( creds ).then(
 			function() {
 				$state.go( 'base.home' );
 			}).catch(function( ex ) {
