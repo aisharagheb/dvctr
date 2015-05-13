@@ -1,3 +1,63 @@
+<!--<form name="ApiConsole" ng-submit="console.Execute()" am-layout="frame horizontal">
+    <header>
+        <fieldset am-layout="stacked">
+            <div role="group" am-padding>
+                <label>Choose a Service:</label>
+                <select ng-model="console.SelectedService"
+                        ng-options="api.name for api in console.Services">
+                    <option value="">&#45;&#45;None&#45;&#45;</option>
+                </select>
+            </div>
+        </fieldset>
+        <fieldset am-layout="stacked">
+            <div role="group" am-padding>
+                <label>Choose a Method:</label>
+                <select ng-model="console.SelectedMethod"
+                        ng-options="method.name for method in console.SelectedService.methods">
+                    <option value="">&#45;&#45;None&#45;&#45;</option>
+                </select>
+            </div>
+        </fieldset>
+        <fieldset am-layout="fill">
+            <div role="group">
+                <div am-block="execute-console">
+                    <div am-block="10">
+                        <pre>{{console.SelectedService.name + '.' + console.SelectedMethod.name + '('}}<span ng-repeat="p in console.SelectedMethod.resolvedParameters">{{(p.Value || p.Name) + (!$last ? ', ' : ')') }}</span></pre>
+                    </div>
+                    <div am-block="2">
+                        <button type="submit" class="am-btn am-primary" ng-disabled="ApiConsole.$invalid">Execute</button>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </header>
+    <div am-scrollable>
+        <fieldset am-layout="stacked" ng-show="console.SelectedMethod">
+            <div role="group" am-padding>
+                <div ng-show="console.SelectedMethod.resolvedParameters.length">
+                    <legend class="am-text-c">Method Parameters</legend>
+                    <div ng-repeat="parameter in console.SelectedMethod.resolvedParameters">
+                        <div ng-if="parameter.Type == 'text'">
+                            <label>{{($index + 1) + '. ' + parameter.Name}}</label>
+                            <input name="{{parameter.Name}}" type="text" ng-model="parameter.Value" ng-required="parameter.Required"/>
+                        </div>
+                        <div ng-if="parameter.Type == 'object'">
+                            <label>{{($index + 1) + '. ' + parameter.Name}}</label>
+                    <textarea name="{{parameter.Name}}"
+                              rows="10"
+                              ng-model="parameter.Value"
+                              ng-required="parameter.Required"
+                              ng-change="console.ValidateParamObject(parameter)">
+                    </textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        <pre ng-show="console.Response">{{console.Response | json}}</pre>
+    </div>
+</form>-->
+
 <article id="Console">
     <section id="ConsoleExplorer" am-padding="large">
         <form am-layout="vertical" name="ApiConsole" ng-submit="console.Execute()" novalidate>
