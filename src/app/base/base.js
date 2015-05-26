@@ -13,7 +13,7 @@ function BaseConfig( $stateProvider ) {
 		url: '',
 		resolve: {
 			isAuthenticated: function( Auth, $state ) {
-				return Auth.isAuthenticated().catch( function() {
+				return Auth.IsAuthenticated().catch( function() {
 						$state.go( 'login' );
 					}
 				);

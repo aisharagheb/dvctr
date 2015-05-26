@@ -16,7 +16,7 @@ function LoginConfig( $stateProvider, $urlMatcherFactoryProvider ) {
 		controllerAs: 'login',
 		resolve: {
 			isAuthenticated: function( Auth, $state ) {
-				return Auth.isAuthenticated()
+				return Auth.IsAuthenticated()
 					.then( function() {
 						$state.go( 'base.home' );
 					})

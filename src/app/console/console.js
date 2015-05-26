@@ -1,7 +1,10 @@
 angular.module('orderCloud.console', [])
     .config( ApiConsoleConfig )
-    .factory('ApiLoader', ApiLoaderService)
-    .controller('ApiConsoleCtrl', ApiConsoleController);
+    .controller('ApiConsoleCtrl', ApiConsoleController)
+	.factory('ApiLoader', ApiLoaderService)
+	.factory('ApiConsoleService', ApiConsoleService)
+	.directive('parameterObject', ParameterObjectDirective)
+;
 
 function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
     $urlMatcherFactoryProvider.strictMode(false);
@@ -11,7 +14,7 @@ function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
         'controller': 'ApiConsoleCtrl',
         'controllerAs': 'console',
         'resolve': {
-            ApiConsoleServices: function (ApiLoader) {
+			OrderCloudServices: function (ApiLoader) {
                 return ApiLoader.getServices('orderCloud.sdk');
             }
         },
@@ -19,53 +22,16 @@ function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
     });
 };
 
-function ApiConsoleController($scope, $resource, $injector, apiurl, ApiConsoleServices) {
+function ApiConsoleController($scope, $resource, $injector, apiurl, OrderCloudServices, ApiConsoleService) {
 	var vm = this;
-	vm.Services = ApiConsoleServices;
+	vm.Services = OrderCloudServices;
 	vm.SelectedService = "";
 	vm.SelectedMethod = "";
 	vm.SelectedEndpoint = null;
 	vm.Response = null;
 
-	vm.ValidateParamObject = function(param) {
-		try {
-			$scope.ApiConsole[param.Name].$setValidity('ObjectParam', validateModel(param.Value));
-		} catch(ex) {
-			$scope.ApiConsole[param.Name].$setValidity('ObjectParam', false);
-		}
-
-		function validateModel(value) {
-			var obj = JSON.parse(value.replace(/\n/g, ''));
-			var fieldErrors = 0;
-			angular.forEach(vm.SelectedEndpoint.RequestBody.Fields, function(field) {
-				angular.forEach(obj, function(value, key) {
-					if (key == field.Name && field.Required) {
-						switch (field.Type) {
-							case('string'):
-								if (!angular.isString(value) || !value.length) fieldErrors++;
-								break;
-							case('boolean'):
-								if (typeof(value) != 'boolean') fieldErrors++;
-								break;
-							case('object'):
-								if (!angular.isObject(value)) fieldErrors++;
-								break;
-							case('integer'):
-								if (!angular.isNumber(value)) fieldErrors++;
-						}
-					}
-				})
-			});
-			return fieldErrors == 0;
-		}
-	};
-
 	vm.Execute = function() {
-		var params = [];
-		angular.forEach(vm.SelectedMethod.resolvedParameters, function(p) {
-			params.push(p.Type == 'object' ? JSON.parse(p.Value) : p.Value);
-		});
-		$injector.get(vm.SelectedService.name)[vm.SelectedMethod.name].apply(this, params)
+		ApiConsoleService.ExecuteApi(vm.SelectedService, vm.SelectedMethod)
 			.then( function(data) {
 				vm.Response = data;
 			})
@@ -78,7 +44,9 @@ function ApiConsoleController($scope, $resource, $injector, apiurl, ApiConsoleSe
 		return vm.SelectedService;
 	}, function (n, o) {
 		if (!n || n === o) return;
+		vm.SelectedService.Documentation = $resource( apiurl + '/docs/' + vm.SelectedService.name ).get();
 		vm.Response = null;
+		vm.SelectedEndpoint = null;
 		vm.SelectedMethod = '';
 	});
 
@@ -87,19 +55,48 @@ function ApiConsoleController($scope, $resource, $injector, apiurl, ApiConsoleSe
 	}, function (n, o) {
 		if (!n || n == '' || n === o) return;
 		vm.Response = null;
-		if (angular.isDefined(n.params)) createParameters(n.params);
+		vm.SelectedEndpoint = null;
+		if (angular.isDefined(n.params)) {
+			ApiConsoleService.CreateParameters(vm.SelectedService, n)
+				.then(function(data) {
+					vm.SelectedEndpoint = data.SelectedEndpoint;
+					vm.SelectedMethod.resolvedParameters = data.ResolvedParameters;
+				});
+		}
 	});
+}
 
-	function createParameters(params) {
-		vm.SelectedMethod.resolvedParameters = [];
-		$resource( apiurl + '/docs/' + vm.SelectedService.name + '/' + vm.SelectedMethod.name).get().$promise
+function ApiConsoleService($injector, $resource, apiurl) {
+	var service = {
+		ExecuteApi: _executeApi,
+		CreateParameters: _createParameters
+	};
+
+	return service;
+
+	/////
+	function _executeApi(SelectedService, SelectedMethod) {
+		var params = [];
+		angular.forEach(SelectedMethod.resolvedParameters, function(p) {
+			params.push(p.Type == 'object' ? JSON.parse(p.Value) : p.Value);
+		});
+		return $injector.get(SelectedService.name)[SelectedMethod.name].apply(this, params);
+	}
+
+	function _createParameters(SelectedService, SelectedMethod) {
+		var result = {
+			SelectedEndpoint: null,
+			ResolvedParameters: []
+		};
+		return $resource( apiurl + '/docs/' + SelectedService.name + '/' + SelectedMethod.name).get().$promise
 			.then( function(data) {
-				vm.SelectedEndpoint = data;
-				analyzeParamters(vm.SelectedEndpoint);
+				result.SelectedEndpoint = data;
+				analyzeParamters(data);
+				return result;
 			});
 
 		function analyzeParamters(endpoint) {
-			angular.forEach(params, function(methodParameter) {
+			angular.forEach(SelectedMethod.params, function(methodParameter) {
 				var isText = false;
 				var isRequired = true;
 				angular.forEach(endpoint.Parameters, function(parameter) {
@@ -123,7 +120,7 @@ function ApiConsoleController($scope, $resource, $injector, apiurl, ApiConsoleSe
 					Value: setValue(),
 					Required: isRequired
 				};
-				vm.SelectedMethod.resolvedParameters.push(resolvedParameter);
+				result.ResolvedParameters.push(resolvedParameter);
 			});
 		}
 	}
@@ -183,4 +180,47 @@ function ApiLoaderService($q, $injector) {
 
 		return deferred.promise;
 	};
+}
+
+function ParameterObjectDirective() {
+	var obj = {
+		restrict: 'A',
+		require: 'ngModel',
+		link: function(scope, element, attrs, ctrl) {
+			ctrl.$validators.parameterObject = function(modelValue, viewValue) {
+				if (ctrl.$isEmpty(modelValue)) return true;
+				try {
+					return validateModel(viewValue);
+				} catch(ex) {
+					return false;
+				}
+				function validateModel(value) {
+					var obj = JSON.parse(value.replace(/\n/g, ''));
+					var fieldErrors = 0;
+					angular.forEach(scope.console.SelectedEndpoint.RequestBody.Fields, function(field) {
+						//TODO: make empty objects and objects that are straight up missing required fields entirely invalid
+						angular.forEach(obj, function(value, key) {
+							if (key == field.Name && field.Required) {
+								switch (field.Type) {
+									case('string'):
+										if (!angular.isString(value) || !value.length) fieldErrors++;
+										break;
+									case('boolean'):
+										if (typeof(value) != 'boolean') fieldErrors++;
+										break;
+									case('object'):
+										if (!angular.isObject(value)) fieldErrors++;
+										break;
+									case('integer'):
+										if (!angular.isNumber(value)) fieldErrors++;
+								}
+							}
+						})
+					});
+					return fieldErrors == 0;
+				}
+			}
+		}
+	};
+	return obj;
 }
