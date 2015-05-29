@@ -20,7 +20,7 @@ angular.module( 'orderCloud', [
 	*/
 
 	.constant('authurl', 'http://core.four51.com:11629/OAuth/token')
-	.constant('apiurl', 'http://core.four51.com:9002/api')
+	.constant('apiurl', 'http://core.four51.com:9002/v1')
 	.constant('clientid', '5e841037-b21c-4784-8cbb-746c4f1468ed')
 
 	.constant('ocscope', 'FullAccess')
