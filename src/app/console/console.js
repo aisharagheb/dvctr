@@ -4,6 +4,7 @@ angular.module('orderCloud.console', [])
 	.factory('ApiLoader', ApiLoaderService)
 	.factory('ApiConsoleService', ApiConsoleService)
 	.directive('parameterObject', ParameterObjectDirective)
+	.directive('emptyToNull', EmptyToNullDirective)
 ;
 
 function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
@@ -223,4 +224,21 @@ function ParameterObjectDirective() {
 		}
 	};
 	return obj;
+}
+
+function EmptyToNullDirective() {
+	var directive = {
+		restrict: 'A',
+		require: 'ngModel',
+		link: function (scope, elem, attrs, ctrl) {
+			ctrl.$parsers.push(function(viewValue) {
+				if(viewValue === "") {
+					return null;
+				}
+				return viewValue;
+			});
+		}
+	};
+
+	return directive;
 }
