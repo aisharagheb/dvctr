@@ -161,18 +161,22 @@ function ApiLoaderService($q, $injector) {
 					name: componentName,
 					methods: []
 				};
-				var f =  $injector.get(factory.name);
-				angular.forEach(f, function(value, key) {
-					var method = {
-						name: key,
-						fn: value.toString(),
-						resolvedParameters: {},
-						callerStatement: null,
-						results: null,
-						params: _getParamNames(value)
-					};
-					factory.methods.push(method);
-				});
+				var f;
+				try {
+					f =  $injector.get(factory.name);
+					angular.forEach(f, function(value, key) {
+						var method = {
+							name: key,
+							fn: value.toString(),
+							resolvedParameters: {},
+							callerStatement: null,
+							results: null,
+							params: _getParamNames(value)
+						};
+						factory.methods.push(method);
+					});
+				}
+				catch (ex) {}
 
 				services.push(factory);
 			}
