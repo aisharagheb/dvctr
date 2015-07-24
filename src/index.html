@@ -8,8 +8,8 @@
 		<link rel="stylesheet" type="text/css" href="<%= file %>" /><% }); %>
     </head>
 
-    <body>
-        <div am-wrapper ui-view></div>
+    <body layout="row">
+        <section layout="column" flex ui-view></section>
         <!-- compiled JavaScript --><% scripts.forEach( function ( file ) { %>
         <script type="text/javascript" src="<%= file %>"></script><% }); %>
     </body>

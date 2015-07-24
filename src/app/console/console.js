@@ -10,26 +10,35 @@ angular.module('orderCloud.console', [])
 function ApiConsoleConfig( $stateProvider, $urlMatcherFactoryProvider ) {
     $urlMatcherFactoryProvider.strictMode(false);
     $stateProvider.state('base.console', {
-        'url': '/console',
-        'templateUrl': 'console/templates/console.tpl.html',
-        'controller': 'ApiConsoleCtrl',
-        'controllerAs': 'console',
+        'url': '/console?service?method',
         'resolve': {
 			OrderCloudServices: function (ApiLoader) {
                 return ApiLoader.getServices('orderCloud.sdk');
             }
         },
-        'data':{ pageTitle: 'API Console' }
+        'data':{ pageTitle: 'API Console' },
+		'views': {
+			'': {
+				templateUrl: 'console/templates/console.tpl.html',
+				controller: 'ApiConsoleCtrl',
+				controllerAs: 'console'
+			}
+		}
     });
 };
 
-function ApiConsoleController($scope, $resource, $injector, apiurl, OrderCloudServices, ApiConsoleService) {
+function ApiConsoleController($scope, $resource, apiurl, OrderCloudServices, ApiConsoleService) {
 	var vm = this;
 	vm.Services = OrderCloudServices;
 	vm.SelectedService = "";
 	vm.SelectedMethod = "";
 	vm.SelectedEndpoint = null;
 	vm.Response = null;
+
+	vm.setSelectedMethod = function(service, method) {
+		vm.SelectedService = service;
+		vm.SelectedMethod = method;
+	};
 
 	vm.Execute = function() {
 		ApiConsoleService.ExecuteApi(vm.SelectedService, vm.SelectedMethod)
@@ -41,30 +50,36 @@ function ApiConsoleController($scope, $resource, $injector, apiurl, OrderCloudSe
 			});
 	};
 
-	$scope.$watch(function () {
-		return vm.SelectedService;
-	}, function (n, o) {
-		if (!n || n === o) return;
-		vm.SelectedService.Documentation = $resource( apiurl + '/docs/' + vm.SelectedService.name ).get();
-		vm.Response = null;
-		vm.SelectedEndpoint = null;
-		vm.SelectedMethod = '';
-	});
-
-	$scope.$watch(function () {
-		return vm.SelectedMethod;
-	}, function (n, o) {
-		if (!n || n == '' || n === o) return;
-		vm.Response = null;
-		vm.SelectedEndpoint = null;
-		if (angular.isDefined(n.params)) {
-			ApiConsoleService.CreateParameters(vm.SelectedService, n)
-				.then(function(data) {
-					vm.SelectedEndpoint = data.SelectedEndpoint;
-					vm.SelectedMethod.resolvedParameters = data.ResolvedParameters;
-				});
+	$scope.$watch(
+		function () {
+			return vm.SelectedService;
+		},
+		function (n, o) {
+			if (!n || n === o) return;
+			vm.SelectedService.Documentation = $resource( apiurl + '/docs/' + vm.SelectedService.name ).get();
+			vm.Response = null;
+			vm.SelectedEndpoint = null;
+			vm.SelectedMethod = '';
 		}
-	});
+	);
+
+	$scope.$watch(
+		function () {
+			return vm.SelectedMethod;
+		},
+		function (n, o) {
+			if (!n || n == '' || n === o) return;
+			vm.Response = null;
+			vm.SelectedEndpoint = null;
+			if (angular.isDefined(n.params)) {
+				ApiConsoleService.CreateParameters(vm.SelectedService, n)
+					.then(function(data) {
+						vm.SelectedEndpoint = data.SelectedEndpoint;
+						vm.SelectedMethod.resolvedParameters = data.ResolvedParameters;
+					});
+			}
+		}
+	);
 }
 
 function ApiConsoleService($injector, $resource, apiurl) {

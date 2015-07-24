@@ -1,16 +1,51 @@
-[ui-sref] {
-  cursor: pointer;
+@four51-blue:#003843;
+
+md-toolbar{
+  background-color:@four51-blue;
 }
 
-form {
-  width:100%;
+.md-default-theme{
+   md-input-container{
+     color: @four51-blue;
+     .md-input-focused{
+       label {
+         color: @four51-blue;
+       }
+       border-color:  @four51-blue;
+       &:not(.md-input-invalid) .md-input{
+         border-color:  @four51-blue; }
+     }
+   }
+
+//login input color
+md-input-container .md-input-pristine .md-input {
+  label{color: @four51-blue;}
+  border-color:  @four51-blue;
 }
 
-//TODO: find a permanent solution for form validation
-input,
-textarea {
-  &.ng-invalid-parameter-object,
-  &.ng-invalid-required {
-    background-color:red;
+md-input-container .md-input-pristine  label, md-input-container .md-input-pristine .md-placeholder .md-input-focused{
+  color:  @four51-blue;
+  border-color:  @four51-blue!important;
+}
+
+md-input-container.md-default-theme  label,
+md-input-container.md-default-theme .md-placeholder{
+  color: @four51-blue !important;
+  border-color:  @four51-blue;
+}
+md-input-container.md-input-invalid .md-input {
+  label{color: @four51-blue;}
+  border-color:  @four51-blue;
+}
+
+md-input-container.md-input-invalid  label, .md-input-pristine md-input-container .md-placeholder .md-input-focused{
+  color:  @four51-blue;
+  border-color:  @four51-blue;
+}
+
+  md-input-group.md-default-theme.md-input-has-value:not(.md-input-focused)  {
+    color: #DDD;
+    border-color:  @four51-blue;
   }
+// end login input color
 }

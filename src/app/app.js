@@ -2,6 +2,7 @@ angular.module( 'orderCloud', [
 	'templates-app',
 	'ngSanitize',
 	'ngAnimate',
+	'ngMaterial',
 	'ngMessages',
 	'ngTouch',
 	'ui.router',
@@ -12,16 +13,14 @@ angular.module( 'orderCloud', [
 	'orderCloud.console'
 ])
 
-	/*
-	Test
+	//Test
 	.constant('authurl', 'https://testauth.ordercloud.io/oauth/token')
-	.constant('apiurl', 'https://testapi.ordercloud.io/api')
-	.constant('clientid', '8ec8ecdb-ccef-4294-802e-2c863cf061df')
-	*/
+	.constant('apiurl', 'https://testapi.ordercloud.io/v1')
+	.constant('clientid', '262bbdce-888c-4425-9083-a9844ace838b')
 
-	.constant('authurl', 'http://core.four51.com:11629/OAuth/token')
-	.constant('apiurl', 'http://core.four51.com:9002')
-	.constant('clientid', '5e841037-b21c-4784-8cbb-746c4f1468ed')
+	//.constant('authurl', 'http://core.four51.com:11629/OAuth/token')
+	//.constant('apiurl', 'http://core.four51.com:9002')
+	//.constant('clientid', 'F027D697-7945-4DE4-AB86-39441923902C')
 
 	.constant('ocscope', 'FullAccess')
 	.constant('appname', 'oc')

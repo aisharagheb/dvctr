@@ -1,27 +1,53 @@
-<aside am-padding>
-	<form am-layout="vertical" name="ApiExplorer">
-		<fieldset am-layout="stack">
-			<div role="group">
-				<label>Choose a Service:</label>
-				<select ng-model="console.SelectedService"
-						ng-options="api.name for api in console.Services">
-					<option value="">--None--</option>
-				</select>
-				<p ng-bind-html="comment | markdown" ng-repeat="comment in console.SelectedService.Documentation.Comments"></p>
-			</div>
-		</fieldset>
-		<fieldset am-layout="stack">
-			<div role="group">
-				<label>Choose a Method:</label>
-				<select ng-model="console.SelectedMethod"
-						ng-options="method.name for method in console.SelectedService.methods">
-					<option value="">--None--</option>
-				</select>
-			</div>
-		</fieldset>
-	</form>
-</aside>
-<article ng-show="console.SelectedEndpoint">
+<body layout="row">
+<md-content flex layout="row" role="main">
+<md-sidenav  md-is-locked-open="$mdMedia('gt-sm')" class=" md-sidenav-left md-whiteframe-z2"
+			md-component-id="left"  ui-view="left" role="navigation" class="md-default-theme consoleStyle" ng-init="isService = true">
+	<div flex layout="row">
+		<md-button ng-click="isService = !isService" >Services test {{console.SelectedService.name}}<span class="caret"></span></md-button>
+	</div>
+	<ul class="docs-menu" ng-if="isService" ng-init="isMethod = false">
+		<li ng-repeat="x in console.Services" ng-model="console.SelectedService">
+			<md-button ng-click="isMethod = !isMethod" class="md-button-toggle md-button" >{{x.name}}</md-button>
+			<ul ng-if="isMethod" ng-model="console.SelectedMethod">
+				<li ng-repeat="method in x.methods">
+					<!--<md-button>{{method.name}}</md-button>-->
+					<md-button ng-click="console.setSelectedMethod(x, method)">{{method.name}}</md-button>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</md-sidenav>
+
+
+
+
+<!--<div am-padding>-->
+	<!--<h1>CONSOLE VIEW test {{console.SelectedService.name}}</h1>-->
+	<!--<form am-layout="vertical" name="ApiExplorer">-->
+		<!--<fieldset am-layout="stack">-->
+			<!--<div role="group">-->
+				<!--<label>Choose a Service:</label>-->
+				<!--<select ng-model="console.SelectedService"-->
+						<!--ng-options="api.name for api in console.Services">-->
+					<!--<option value="">&#45;&#45;None&#45;&#45;</option>-->
+				<!--</select>-->
+				<!--<p ng-bind-html="comment | markdown" ng-repeat="comment in console.SelectedService.Documentation.Comments"></p>-->
+			<!--</div>-->
+		<!--</fieldset>-->
+		<!--<fieldset am-layout="stack">-->
+			<!--<div role="group">-->
+				<!--<label>Choose a Method:</label>-->
+				<!--<select ng-model="console.SelectedMethod"-->
+						<!--ng-options="method.name for method in console.SelectedService.methods">-->
+					<!--<option value="">&#45;&#45;None&#45;&#45;</option>-->
+				<!--</select>-->
+			<!--</div>-->
+		<!--</fieldset>-->
+	<!--</form>-->
+<!--</div>-->
+
+
+<!--<div ng-show="console.SelectedEndpoint">-->
 	<section id="Documentation">
 		<h4><b>{{console.SelectedEndpoint.Name}}</b></h4>
 		<p ng-bind-html="comment | markdown" ng-repeat="comment in console.SelectedEndpoint.Comments"></p>
@@ -74,7 +100,7 @@
 							<label>{{($index + 1) + '. ' + parameter.Name}}</label>
 							<input name="{{parameter.Name}}" type="text" ng-model="parameter.Value" ng-required="parameter.Required" empty-to-null />
 						</div>
-						<div ng-if="parameter.Type == 'object'">
+						<div ng-if="parameter.Type == 'object'">``
 							<label>{{($index + 1) + '. ' + parameter.Name}}</label>
 							<textarea name="{{parameter.Name}}"
 									  rows="10"
@@ -97,4 +123,8 @@
 	<section id="Response">
 		<pre ng-show="console.Response">{{console.Response | json}}</pre>
 	</section>
-</article>
+</div>
+</md-content>
+
+</body>
+

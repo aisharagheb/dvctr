@@ -28,8 +28,9 @@ module.exports = {
 
 		html: [ 'src/index.html' ],
 		import_less: [
-			'vendor/normalize-css/normalize.css', //ambient dependency
-			'vendor/ambient/less/ambient.less',
+			//'vendor/normalize-css/normalize.css', //ambient dependency
+			//'vendor/ambient/less/ambient.less',
+			'vendor/angular-material/angular-material.css',
 			'vendor/font-awesome/less/font-awesome.less',
 			'src/app/**/*.less'
 		]
@@ -68,6 +69,8 @@ module.exports = {
 			'vendor/angular-sanitize/angular-sanitize.js',
 			'vendor/angular-messages/angular-messages.js',
 			'vendor/angular-animate/angular-animate.js',
+			'vendor/angular-aria/angular-aria.js',
+			'vendor/angular-material/angular-material.js',
 			'vendor/angular-touch/angular-touch.js',
 			'vendor/angular-ui-router/release/angular-ui-router.js',
 			'vendor/jquery/dist/jquery.js',

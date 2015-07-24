@@ -1,6 +1,7 @@
-<header id="BaseTop" ui-view="top"></header>
-<aside id="BaseLeft" ui-view="left" ng-class="{open:base.swiped == 'left'}" ng-swipe-left="base.setSwipe('none')"></aside>
-<main id="BaseMain" ui-view ng-swipe-right="base.setSwipe('left')"></main>
-<!--<aside id="BaseRight"  ui-view="right" ng-class="{open:base.swiped == 'right'}" ng-swipe-right="base.setSwipe('none')"></aside>-->
-<!--<footer id="BaseBottom" ui-view="bottom" ></footer>-->
-<!--ng-swipe-left="base.setSwipe('right')"-->
+<md-toolbar ui-view="top" class="md-whiteframe-z3"></md-toolbar>
+
+<section  layout="row" style="overflow-y: auto;">
+    <md-sidenav flex md-is-locked-open="$mdMedia('gt-sm')" class="site-sidenav md-sidenav-left md-whiteframe-z2"
+    md-component-id="left"  ui-view="left"  ng-show="console.Services"></md-sidenav>
+    <div flex ui-view ></div>
+</section>
