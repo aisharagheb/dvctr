@@ -1,10 +1,57 @@
-md-list{
-  md-list-item{
-    a{
-      text-decoration: none;
-    }
+.my-show-hide-animation.ng-hide-remove,
+.my-show-hide-animation.ng-hide-add {
+  /* remember, the .hg-hide class is added to element
+     when the active class is added causing it to appear
+     as hidden. Therefore set the styling to display=block
+     so that the hide animation is visible */
+  display:block!important;
+}
+
+.show-hide-animation.ng-hide-add {
+  -webkit-animation:0.5s hide;
+  animation:0.5s hide;
+}
+
+@keyframes hide {
+  from { opacity:1; }
+  to { opacity:0; }
+}
+
+@-webkit-keyframes hide {
+  from { opacity:1; }
+  to { opacity:0; }
+}
+
+.show-hide-animation.ng-hide-remove {
+  -webkit-animation:0.5s show;
+  animation:0.5s show;
+}
+
+@keyframes show {
+  from { opacity:0; }
+  to { opacity:1; }
+}
+
+@-webkit-keyframes show {
+  from { opacity:0; }
+  to { opacity:1; }
+}
+
+.paramTable{
+  td{
+    font-size: 11px;
   }
 }
-a{
-  text-decoration: none;
+
+body{
+  font-family: "Roboto", sans-serif;
+}
+.consoleContent{
+  section{
+    background-color: #f2f2f2;
+  }
+}
+
+.site-sidenav{
+  overflow-y: auto;
 }
