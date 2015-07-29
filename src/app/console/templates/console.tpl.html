@@ -1,56 +1,33 @@
-<body role="main">
-<md-content flex layout="row" >
-<md-sidenav  md-is-locked-open="$mdMedia('gt-sm')" class="site-sidenav md-sidenav-left md-whiteframe-z2"
-			md-component-id="left"  ui-view="left" role="list" class="md-default-theme consoleStyle">
-	<div flex>
-		<md-button flex  >Services test {{console.SelectedService.name}}</md-button>
-	</div>
-	<div  ng-repeat="x in console.Services" ng-model="console.SelectedService"  ng-init="isMethod = false">
-		<md-button flex  ng-click="isMethod = !isMethod" class=" md-button" >{{x.name}}</md-button>
-		<md-list flex  ng-show="isMethod" ng-model="console.SelectedMethod" class="show-hide-animation">
-			<md-list-item ng-repeat="method in x.methods" >
-				<!--<md-button>{{method.name}}</md-button>-->
-				<md-button flex layout="row" ng-click="console.setSelectedMethod(x, method)">{{method.name}}</md-button>
-			</md-list-item>
+<body tabindex="-1" layout="column">
+<md-content flex layout="row" role="main">
+	<md-sidenav  md-is-locked-open="$mdMedia('gt-sm')" class="site-sidenav md-sidenav-left md-whiteframe-z2"
+				 md-component-id="left"  ui-view="left" role="list" class="md-default-theme consoleStyle" layout="column">
+			<md-toolbar class="md-toolbar-tools">
+			<h1  layout-padding >Services </h1>
+		</md-toolbar>
+		<md-list class="sideNavButtons  " ng-repeat="x in console.Services" ng-model="console.SelectedService"  ng-init="isMethod = false">
+		<md-list-item><md-button   ng-click="isMethod = !isMethod" class="md-list-item" >{{x.name}}</md-button></md-list-item>
+			<md-list flex  ng-show="isMethod" ng-model="console.SelectedMethod" class="show-hide-animation">
+				<md-list-item ng-repeat="method in x.methods" >
+					<!--<md-button>{{method.name}}</md-button>-->
+					<md-button flex layout="row" ng-click="console.setSelectedMethod(x, method)">{{method.name}}</md-button>
+				</md-list-item>
+			</md-list>
 		</md-list>
+	</md-sidenav>
+
+	<div ng-hide="console.SelectedEndpoint" layout-padding layout="column" layout-align="center" flex
+		<div layout="column" layout-align="center center">
+			<md-toolbar>Select a Service, then select a Method.</md-toolbar>
+			<md-button>Services</md-button>
+		</div>
 	</div>
-</md-sidenav>
-
-<!--<div am-padding>-->
-	<!--<h1>CONSOLE VIEW test {{console.SelectedService.name}}</h1>-->
-	<!--<form am-layout="vertical" name="ApiExplorer">-->
-		<!--<fieldset am-layout="stack">-->
-			<!--<div role="group">-->
-				<!--<label>Choose a Service:</label>-->
-				<!--<select ng-model="console.SelectedService"-->
-						<!--ng-options="api.name for api in console.Services">-->
-					<!--<option value="">&#45;&#45;None&#45;&#45;</option>-->
-				<!--</select>-->
-				<!--<p ng-bind-html="comment | markdown" ng-repeat="comment in console.SelectedService.Documentation.Comments"></p>-->
-			<!--</div>-->
-		<!--</fieldset>-->
-		<!--<fieldset am-layout="stack">-->
-			<!--<div role="group">-->
-				<!--<label>Choose a Method:</label>-->
-				<!--<select ng-model="console.SelectedMethod"-->
-						<!--ng-options="method.name for method in console.SelectedService.methods">-->
-					<!--<option value="">&#45;&#45;None&#45;&#45;</option>-->
-				<!--</select>-->
-			<!--</div>-->
-		<!--</fieldset>-->
-	<!--</form>-->
-<!--</div>-->
-
-<div ng-hide="console.SelectedEndpoint" layout-padding layout="column" layout-align="center" flex>
-	<h1 flex>Select a Service, then select a Method.</h1>
-</div>
-
 
 <div layout="row" ng-show="console.SelectedEndpoint" layout-margin layout-fill layout-padding  class="consoleContent">
-	<section flex class="md-whiteframe-z1">
+	<section flex class="md-whiteframe-z1" ng-show="console.SelectedEndpoint.Name || console.SelectedEndpoint.HttpVerb || console.SelectedEndpoint.Parameters  ">
 		<h4><b>{{console.SelectedEndpoint.Name}}</b></h4>
 		<p ng-bind-html="comment | markdown" ng-repeat="comment in console.SelectedEndpoint.Comments"></p>
-		<p>{{console.SelectedEndpoint.HttpVerb}} <span>{{console.SelectedEndpoint.UriTemplate}} HELLOW WORLD</span></p>
+		<p>{{console.SelectedEndpoint.HttpVerb}} <span>{{console.SelectedEndpoint.UriTemplate}}</span></p>
 		<div flex ng-if="console.SelectedEndpoint.Parameters.length" class="md-whiteframe-z1 paramTable" layout-padding>
 			<b>Parameters</b>
 			<table>
