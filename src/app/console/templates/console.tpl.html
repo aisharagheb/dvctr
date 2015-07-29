@@ -3,7 +3,9 @@
 	<md-sidenav  md-is-locked-open="$mdMedia('gt-sm')" class="site-sidenav md-sidenav-left md-whiteframe-z2"
 				 md-component-id="left"  ui-view="left" role="list" class="md-default-theme consoleStyle" layout="column">
 			<md-toolbar class="md-toolbar-tools">
+				<div class="md-toolbar-tools" layout="column" layout-align="center center">
 			<h1  layout-padding >Services </h1>
+				</div>
 		</md-toolbar>
 		<md-list class="sideNavButtons  " ng-repeat="x in console.Services" ng-model="console.SelectedService"  ng-init="isMethod = false">
 		<md-list-item><md-button   ng-click="isMethod = !isMethod" class="md-list-item" >{{x.name}}</md-button></md-list-item>
@@ -16,10 +18,14 @@
 		</md-list>
 	</md-sidenav>
 
-	<div ng-hide="console.SelectedEndpoint" layout-padding layout="column" layout-align="center" flex
+	<div ng-hide="console.SelectedEndpoint"  layout="column" layout-align="center" flex>
 		<div layout="column" layout-align="center center">
-			<md-toolbar>Select a Service, then select a Method.</md-toolbar>
-			<md-button>Services</md-button>
+			<md-toolbar class="md-warn">
+				<div class="md-toolbar-tools" layout="row" layout-align="center center">
+				Select a Service, then select a Method.
+				</div>
+			</md-toolbar>
+			<md-button >Services</md-button>
 		</div>
 	</div>
 
